@@ -1,1 +1,1 @@
-# Vital Sign Montior Project
+# Vital Sign Monitor Project
