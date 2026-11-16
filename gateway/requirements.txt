@@ -3,3 +3,4 @@ pyserial
 python-dotenv
 adafruit-blinka
 adafruit-circuitpython-ads1x15
+paho-mqtt
