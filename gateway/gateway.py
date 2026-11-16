@@ -197,9 +197,19 @@ def flush_queue(wait_for_retry=True):
             print(f"uploaded queued session {session_id}")
 
 
+def run_sessions(read, n, loop=False):
+    while True:
+        enqueue(collect_session(read, n))
+        flush_queue(wait_for_retry=not loop)
+        if not loop:
+            return
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--fake", action="store_true")
+    ap.add_argument("--loop", action="store_true",
+                    help="collect sessions continuously")
     ap.add_argument("--port")
     ap.add_argument("--baud", type=int, default=115200)
     ap.add_argument("--n", type=int, default=10, help="readings per session")
@@ -215,5 +225,4 @@ if __name__ == "__main__":
         ser = serial.Serial(args.port, args.baud, timeout=2)
         read = lambda: read_serial(ser)
 
-    enqueue(collect_session(read, args.n))
-    flush_queue()
+    run_sessions(read, args.n, loop=args.loop)

@@ -10,6 +10,9 @@ lost, a retry can create a duplicate because the current API has no
 idempotency key.
 
 Install gateway dependencies with `python -m pip install -r requirements.txt`.
+From the repository root, install test dependencies with
+`python -m pip install -r gateway/requirements-dev.txt` and run
+`python -m pytest gateway/tests`.
 Copy `.env.example` to `.env` and set `VSM_URL`, `VSM_USER`, and `VSM_PASS`.
 The URL must use HTTPS; certificate verification is always enabled. For a LAN
 CA, set `REQUESTS_CA_BUNDLE` to its trusted certificate file.
@@ -48,4 +51,8 @@ sudo journalctl -u vsm-gateway.service -f
 ```
 
 The current gateway collects one session and exits after upload; systemd starts
-it at boot and restarts it on failure, not after a successful session.
+it with `--loop` to collect repeated sessions and restarts it on failure.
+Manual runs remain one session unless `--loop` is supplied, for example
+`python gateway.py --fake --loop --n 10`. While offline, continuous mode keeps
+collecting sessions into SQLite and attempts to flush the backlog between
+sessions.
