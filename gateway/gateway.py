@@ -80,6 +80,13 @@ def fake_reading():
     return {"hr": random.randint(60, 90), "spo2": random.randint(95, 100),
             "body_temp": round(random.uniform(36.2, 37.2), 1)}
 
+def read_mqtt(url, port):
+    if not url:
+        raise ValueError("missing mqtt broker url")
+    if not port:
+        raise ValueError("missing mqtt broker port")
+
+
 
 def read_serial(ser):
     while True:
@@ -204,6 +211,24 @@ def run_sessions(read, n, loop=False):
         if not loop:
             return
 
+def on_mqtt_connect(client, userdata, flags, reason_code, properties):
+    if reason_code == 0:
+        print("Connected to MQTT Broker!")
+        client.subscribe("vsm/sensor")
+    else:
+        print(f"Failed to connect, return code {reason_code}")
+
+def on_mqtt_message(client, userdata, msg):
+    payload = msg.payload.decode("utf-8")
+    print(f"Topic: {msg.topic} | Message: {payload}")
+
+    readings = []
+    readings.append(json.loads(payload))
+
+    # enqueue(collect_session(read, n))
+    enqueue(readings)
+    flush_queue()
+
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -213,6 +238,8 @@ if __name__ == "__main__":
     ap.add_argument("--port")
     ap.add_argument("--baud", type=int, default=115200)
     ap.add_argument("--n", type=int, default=10, help="readings per session")
+    ap.add_argument("--mqtt-url", type=str, default="", help="url of mqtt broker")
+    ap.add_argument("--mqtt-port", type=int, default="1883", help="port of mqtt broker")
     args = ap.parse_args()
 
     init_queue()
@@ -221,8 +248,18 @@ if __name__ == "__main__":
         read = fake_reading
     else:
         import serial
+        import paho.mqtt.client as mqtt
 
         ser = serial.Serial(args.port, args.baud, timeout=2)
-        read = lambda: read_serial(ser)
+        # read = lambda: read_serial(ser)
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
-    run_sessions(read, args.n, loop=args.loop)
+        client.on_connect = on_mqtt_connect
+        client.on_message = on_mqtt_message
+
+        client.connect(args.mqtt_url, args.mqtt_port, keepalive=60)
+        client.loop_forever()
+
+
+    # run_sessions(read, args.n, loop="vsm/sensor"args.loop)
+
