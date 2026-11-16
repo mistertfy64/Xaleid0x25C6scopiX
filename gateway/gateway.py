@@ -238,8 +238,10 @@ if __name__ == "__main__":
     ap.add_argument("--port")
     ap.add_argument("--baud", type=int, default=115200)
     ap.add_argument("--n", type=int, default=10, help="readings per session")
-    ap.add_argument("--mqtt-url", type=str, default="", help="url of mqtt broker")
-    ap.add_argument("--mqtt-port", type=int, default="1883", help="port of mqtt broker")
+    ap.add_argument("--mqtt-broker-url", type=str, default="",
+                    help="url of mqtt broker, supersedes environemnt variable if specified")
+    ap.add_argument("--mqtt-port", type=int, default="1883",
+                    help="port of mqtt broker, supersedes environment variable if specified")
     args = ap.parse_args()
 
     init_queue()
