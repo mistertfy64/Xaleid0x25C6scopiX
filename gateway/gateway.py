@@ -259,7 +259,10 @@ if __name__ == "__main__":
         client.on_connect = on_mqtt_connect
         client.on_message = on_mqtt_message
 
-        client.connect(args.mqtt_url, args.mqtt_port, keepalive=60)
+        mqtt_broker_url = args.mqtt_broker_url or os.environ.get("MQTT_BROKER_URL", "")
+        mqtt_broker_port = args.mqtt_broker_port or os.environ.get("MQTT_BROKER_PORT", "")
+
+        client.connect(mqtt_broker_url, mqtt_broker_port, keepalive=60)
         client.loop_forever()
 
 
