@@ -1,0 +1,4 @@
+__pycache__/
+spool/
+*.py[cod]
+.env
