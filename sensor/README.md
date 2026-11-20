@@ -36,7 +36,7 @@ because the MLX90614 does not support faster speeds.
 Topic: `vsm/sensor/<node_id>`
 
 ```json
-{"node_id":"node-1","seq":12,"hr":72,"spo2":null,"body_temp":36.4,"finger":true,"uptime_ms":123456}
+{"node_id":"node-1","seq":12,"hr":72,"spo2":97,"body_temp":36.4,"finger":true,"uptime_ms":123456}
 ```
 
 | Field       | Meaning                                                            |
@@ -44,7 +44,7 @@ Topic: `vsm/sensor/<node_id>`
 | `node_id`   | Unique per physical node; the gateway keeps it in every reading     |
 | `seq`       | Counter since boot; gaps show lost messages (packet delivery rate) |
 | `hr`        | Average of the last 4 beats in bpm, `null` without a stable signal |
-| `spo2`      | Not computed yet, always `null`                                    |
+| `spo2`      | Blood oxygen % (Maxim red/IR algorithm, 4 s window), `null` if unstable |
 | `body_temp` | MLX90614 object temperature in °C (skin, not core temperature)     |
 | `finger`    | Whether a finger is on the MAX30102                                |
 | `uptime_ms` | Milliseconds since boot                                            |
