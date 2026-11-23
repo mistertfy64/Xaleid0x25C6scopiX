@@ -15,6 +15,8 @@ import sys
 import threading
 import time
 from typing import Any, Optional
+import urllib.error
+import urllib.request
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException, Request
@@ -121,6 +123,12 @@ class MeasureReq(BaseModel):
     token: str
     measurements: Any
     session_id: Optional[str] = None
+
+
+class AnalyzeReq(BaseModel):
+    userID: int
+    node_id: Optional[str] = None
+    limit: int = 100
 
 
 def enforce_login_rate_limit(request: Request):
@@ -232,6 +240,251 @@ def get_measurements(
             for row in rows
         ],
     }
+
+
+def _to_float(value: Any) -> Optional[float]:
+    if value is None or isinstance(value, bool) or value == "":
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    return numeric if numeric == numeric else None
+
+
+def _score_hr(hr: Optional[float]) -> int:
+    if hr is None:
+        return 0
+    if hr <= 40 or hr >= 131:
+        return 3
+    if hr >= 111:
+        return 2
+    if hr <= 50 or hr >= 91:
+        return 1
+    return 0
+
+
+def _score_spo2(spo2: Optional[float]) -> int:
+    if spo2 is None:
+        return 0
+    if spo2 <= 91:
+        return 3
+    if spo2 <= 93:
+        return 2
+    if spo2 <= 95:
+        return 1
+    return 0
+
+
+def _score_body_temp(temp: Optional[float]) -> int:
+    if temp is None:
+        return 0
+    if temp <= 35.0 or temp >= 39.1:
+        return 3
+    if temp >= 38.1:
+        return 2
+    if temp <= 36.0 or temp >= 37.6:
+        return 1
+    return 0
+
+
+def _metric_stats(values: list[float], stable_delta: float, digits: int = 1) -> Optional[dict[str, Any]]:
+    if not values:
+        return None
+    avg = sum(values) / len(values)
+    trend = "stable"
+    if len(values) >= 4:
+        mid = len(values) // 2
+        early_avg = sum(values[:mid]) / mid
+        late_avg = sum(values[mid:]) / (len(values) - mid)
+        diff = late_avg - early_avg
+        if diff >= stable_delta:
+            trend = "rising"
+        elif diff <= -stable_delta:
+            trend = "falling"
+    return {
+        "min": round(min(values), digits),
+        "avg": round(avg, digits),
+        "max": round(max(values), digits),
+        "latest": round(values[-1], digits),
+        "trend": trend,
+    }
+
+
+def analyze_vital_signs(readings: list[dict[str, Any]]) -> dict[str, Any]:
+    disclaimer = "การวิเคราะห์นี้เป็นข้อมูลเบื้องต้นเพื่อช่วยเฝ้าระวังเท่านั้น ไม่ใช่การวินิจฉัยทางการแพทย์"
+    if not readings:
+        return {
+            "sample_count": 0,
+            "risk_score": 0,
+            "risk_level": "unknown",
+            "risk_label": "ยังไม่มีข้อมูล",
+            "stats": {},
+            "findings": ["ยังไม่มีข้อมูลการวัดเพียงพอสำหรับวิเคราะห์"],
+            "summary": "ยังไม่มีข้อมูลสัญญาณชีพสำหรับวิเคราะห์ กรุณารอข้อมูลจากโหนดเซ็นเซอร์",
+            "disclaimer": disclaimer,
+        }
+
+    ordered = sorted(readings, key=lambda item: _to_float(item.get("t")) or 0.0)
+    hr_vals = [v for item in ordered if (v := _to_float(item.get("hr"))) is not None]
+    spo2_vals = [v for item in ordered if (v := _to_float(item.get("spo2"))) is not None]
+    temp_vals = [v for item in ordered if (v := _to_float(item.get("body_temp"))) is not None]
+    mach_vals = [v for item in ordered if (v := _to_float(item.get("machine_temp"))) is not None]
+
+    latest_hr = hr_vals[-1] if hr_vals else None
+    latest_spo2 = spo2_vals[-1] if spo2_vals else None
+    latest_temp = temp_vals[-1] if temp_vals else None
+    latest_mach = mach_vals[-1] if mach_vals else None
+
+    hr_score = _score_hr(latest_hr)
+    spo2_score = _score_spo2(latest_spo2)
+    temp_score = _score_body_temp(latest_temp)
+    risk_score = hr_score + spo2_score + temp_score
+    max_single = max(hr_score, spo2_score, temp_score)
+
+    if risk_score >= 5 or max_single >= 3:
+        risk_level, risk_label = "high", "ความเสี่ยงสูง"
+    elif risk_score >= 2:
+        risk_level, risk_label = "moderate", "ควรเฝ้าระวัง"
+    else:
+        risk_level, risk_label = "low", "ความเสี่ยงต่ำ"
+
+    stats = {
+        "hr": _metric_stats(hr_vals, stable_delta=5.0, digits=0),
+        "spo2": _metric_stats(spo2_vals, stable_delta=1.5, digits=0),
+        "body_temp": _metric_stats(temp_vals, stable_delta=0.3, digits=1),
+        "machine_temp": _metric_stats(mach_vals, stable_delta=2.0, digits=1),
+    }
+
+    findings = []
+    if latest_hr is not None:
+        if latest_hr > 100:
+            findings.append(f"ชีพจรล่าสุดสูงกว่าเกณฑ์ปกติ ({latest_hr:.0f} bpm)")
+        elif latest_hr < 60:
+            findings.append(f"ชีพจรล่าสุดต่ำกว่าเกณฑ์ปกติ ({latest_hr:.0f} bpm)")
+        if stats["hr"] and stats["hr"]["trend"] == "rising":
+            findings.append("แนวโน้มชีพจรมีทิศทางเพิ่มขึ้นต่อเนื่อง")
+        elif stats["hr"] and stats["hr"]["trend"] == "falling":
+            findings.append("แนวโน้มชีพจรมีทิศทางลดลง")
+    if latest_spo2 is not None:
+        if latest_spo2 < 95:
+            findings.append(f"ค่า SpO₂ ล่าสุดต่ำกว่าเกณฑ์ปกติ ({latest_spo2:.0f}%) ควรตรวจสอบการวางนิ้วและวัดซ้ำ")
+        if stats["spo2"] and stats["spo2"]["trend"] == "falling":
+            findings.append("แนวโน้มค่า SpO₂ ลดลง ควรเฝ้าระวังอย่างใกล้ชิด")
+    if latest_temp is not None:
+        if latest_temp > 37.5:
+            findings.append(f"อุณหภูมิร่างกายล่าสุดสูงกว่าปกติ ({latest_temp:.1f} °C)")
+        elif latest_temp < 36.0:
+            findings.append(f"อุณหภูมิร่างกายล่าสุดค่อนข้างต่ำ ({latest_temp:.1f} °C)")
+    if latest_mach is not None and latest_mach > 45.0:
+        findings.append(f"อุณหภูมิเครื่องค่อนข้างสูง ({latest_mach:.1f} °C) ควรตรวจสอบการระบายความร้อนของอุปกรณ์")
+
+    if not findings:
+        findings.append("สัญญาณชีพหลักทั้งหมดอยู่ในเกณฑ์ปกติและมีแนวโน้มคงที่")
+
+    if risk_level == "high":
+        summary = (
+            f"คะแนนเฝ้าระวังเบื้องต้น {risk_score} ({risk_label}): "
+            + " · ".join(findings[:2])
+            + " แนะนำให้ตรวจสอบการวางเซ็นเซอร์ วัดซ้ำทันที และปรึกษาบุคลากรทางการแพทย์หากค่าผิดปกติต่อเนื่อง"
+        )
+    elif risk_level == "moderate":
+        summary = (
+            f"คะแนนเฝ้าระวังเบื้องต้น {risk_score} ({risk_label}): "
+            + " · ".join(findings[:2])
+            + " แนะนำให้นั่งพัก 2–3 นาทีแล้ววัดซ้ำเพื่อติดตามแนวโน้ม"
+        )
+    else:
+        summary = (
+            f"คะแนนเฝ้าระวังเบื้องต้น {risk_score} ({risk_label}): "
+            "ภาพรวมสัญญาณชีพอยู่ในเกณฑ์ปกติ สามารถติดตามต่อเนื่องตามรอบปกติได้"
+        )
+
+    return {
+        "sample_count": len(ordered),
+        "risk_score": risk_score,
+        "risk_level": risk_level,
+        "risk_label": risk_label,
+        "stats": stats,
+        "findings": findings,
+        "summary": summary,
+        "disclaimer": disclaimer,
+    }
+
+
+def summarize_with_gemini(analysis: dict[str, Any], node_id: Optional[str] = None) -> Optional[str]:
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        return None
+    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").strip() or "gemini-2.5-flash"
+    prompt = (
+        "คุณคือผู้ช่วยสรุปข้อมูลสัญญาณชีพสำหรับระบบติดตามสุขภาพ (ไม่ใช่แพทย์ ห้ามวินิจฉัยโรค)\n"
+        "กรุณาสรุปภาพรวมและคำแนะนำการเฝ้าระวังเบื้องต้นเป็นภาษาไทยกระชับ 2-3 ประโยค จากข้อมูลสถิติต่อไปนี้:\n"
+        f"{json.dumps({'node_id': node_id or 'all', 'risk_score': analysis['risk_score'], 'risk_label': analysis['risk_label'], 'stats': analysis['stats'], 'findings': analysis['findings']}, ensure_ascii=False)}"
+    )
+    body = json.dumps({
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.3, "maxOutputTokens": 220},
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": api_key,
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        parts = payload.get("candidates", [{}])[0].get("content", {}).get("parts", [])
+        text = "".join(part.get("text", "") for part in parts).strip()
+        return text or None
+    except (urllib.error.URLError, TimeoutError, ValueError, KeyError, IndexError):
+        return None
+
+
+@app.post("/analyze")
+def post_analyze(
+    r: AnalyzeReq,
+    authorization: Optional[str] = Header(None),
+):
+    token = (authorization or "").removeprefix("Bearer ").strip()
+    limit = max(1, min(r.limit, 200))
+    with db() as connection:
+        cleanup_expired_tokens(connection)
+        connection.commit()
+        if not check_token(connection, token, r.userID, "viewer"):
+            raise HTTPException(401, "invalid token")
+        rows = connection.execute(
+            "SELECT created_at, data FROM measurements WHERE user_id=? "
+            "ORDER BY id DESC LIMIT ?",
+            (r.userID, limit),
+        ).fetchall()
+
+    readings: list[dict[str, Any]] = []
+    for row in rows:
+        raw_items = json.loads(row["data"])
+        items = raw_items if isinstance(raw_items, list) else [raw_items]
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            if r.node_id and r.node_id != "all" and item.get("node_id") != r.node_id:
+                continue
+            enriched = dict(item)
+            enriched.setdefault("t", row["created_at"])
+            readings.append(enriched)
+
+    analysis = analyze_vital_signs(readings)
+    source = "rule-based"
+    if readings:
+        ai_text = summarize_with_gemini(analysis, node_id=r.node_id)
+        if ai_text:
+            analysis["summary"] = ai_text
+            source = "gemini"
+
+    return {"success": True, "source": source, **analysis}
 
 
 if __name__ == "__main__" and len(sys.argv) == 4 and sys.argv[1] == "add-user":

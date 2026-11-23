@@ -160,3 +160,88 @@ def test_duplicate_session_id_is_deduplicated(api):
     )
     assert fetched.status_code == 200
     assert len(fetched.json()["measurements"]) == 1
+
+
+def test_analyze_requires_viewer_token(api):
+    backend, client = api
+    create_user(backend)
+    response = client.post("/analyze", json={"userID": 1})
+    assert response.status_code == 401
+
+
+def test_analyze_rule_based_fallback_and_node_filter(api, monkeypatch):
+    backend, client = api
+    create_user(backend)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
+    gw = login(client, kind="gateway").json()
+    client.post(
+        "/measurements",
+        json={
+            "userID": gw["userID"],
+            "token": gw["token"],
+            "measurements": [
+                {"node_id": "node-1", "hr": 72, "spo2": 98, "body_temp": 36.6, "t": 100},
+                {"node_id": "node-2", "hr": 105, "spo2": 93, "body_temp": 37.9, "t": 110},
+                {"node_id": "node-2", "hr": 112, "spo2": 92, "body_temp": 38.2, "t": 120},
+            ],
+        },
+    )
+
+    viewer = login(client, kind="viewer").json()
+    headers = {"Authorization": f"Bearer {viewer['token']}"}
+
+    node1 = client.post(
+        "/analyze",
+        json={"userID": viewer["userID"], "node_id": "node-1"},
+        headers=headers,
+    )
+    assert node1.status_code == 200
+    data1 = node1.json()
+    assert data1["success"] is True
+    assert data1["source"] == "rule-based"
+    assert data1["risk_level"] == "low"
+    assert data1["sample_count"] == 1
+
+    node2 = client.post(
+        "/analyze",
+        json={"userID": viewer["userID"], "node_id": "node-2"},
+        headers=headers,
+    )
+    assert node2.status_code == 200
+    data2 = node2.json()
+    assert data2["source"] == "rule-based"
+    assert data2["risk_level"] == "high"
+    assert data2["risk_score"] >= 5
+    assert data2["sample_count"] == 2
+
+
+def test_analyze_uses_gemini_when_configured(api, monkeypatch):
+    backend, client = api
+    create_user(backend)
+
+    gw = login(client, kind="gateway").json()
+    client.post(
+        "/measurements",
+        json={
+            "userID": gw["userID"],
+            "token": gw["token"],
+            "measurements": [{"node_id": "node-1", "hr": 74, "spo2": 98, "body_temp": 36.7, "t": 100}],
+        },
+    )
+
+    monkeypatch.setattr(
+        backend,
+        "summarize_with_gemini",
+        lambda analysis, node_id=None: "สรุปจาก Gemini: สัญญาณชีพปกติทั้งหมด",
+    )
+    viewer = login(client, kind="viewer").json()
+    response = client.post(
+        "/analyze",
+        json={"userID": viewer["userID"], "node_id": "node-1"},
+        headers={"Authorization": f"Bearer {viewer['token']}"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["source"] == "gemini"
+    assert body["summary"] == "สรุปจาก Gemini: สัญญาณชีพปกติทั้งหมด"

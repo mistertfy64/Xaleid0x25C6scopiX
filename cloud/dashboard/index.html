@@ -18,6 +18,15 @@
       --accent: #17634f;
       --surface: #fff;
       --surface-subtle: #f7f9f8;
+      --ok-fg: #136348;
+      --ok-bg: #eaf6f1;
+      --ok-bd: #bfe2d4;
+      --warn-fg: #8c5a08;
+      --warn-bg: #fff6e3;
+      --warn-bd: #ebd39d;
+      --alert-fg: #a12c22;
+      --alert-bg: #fdf0ee;
+      --alert-bd: #ebbbb5;
     }
 
     * { box-sizing: border-box; }
@@ -142,14 +151,65 @@
     }
     .identity { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
     .demo-notice {
-      margin: 0 0 18px;
+      margin: 0 0 14px;
       padding: 11px 14px;
       border: 1px solid #e8d9a8;
-      border-radius: 4px;
+      border-radius: 6px;
       color: #59491e;
       background: #fff9e8;
       font-size: 13px;
       line-height: 1.5;
+    }
+    .status-strip {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 16px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: #34413c;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .status-pill.is-ok { color: var(--ok-fg); background: var(--ok-bg); border-color: var(--ok-bd); }
+    .status-pill.is-warn { color: var(--warn-fg); background: var(--warn-bg); border-color: var(--warn-bd); }
+    .status-pill.is-alert { color: var(--alert-fg); background: var(--alert-bg); border-color: var(--alert-bd); }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9aa8a1;
+      flex-shrink: 0;
+    }
+    .status-pill.is-ok .status-dot { background: #198754; box-shadow: 0 0 0 3px rgba(25, 135, 84, .18); }
+    .status-pill.is-warn .status-dot { background: #d39218; }
+    .status-pill.is-alert .status-dot { background: #c9372c; }
+    .alert-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 16px;
+      padding: 12px 15px;
+      border: 1px solid var(--warn-bd);
+      border-radius: 8px;
+      background: var(--warn-bg);
+      color: var(--warn-fg);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+    .alert-banner.is-alert {
+      border-color: var(--alert-bd);
+      background: var(--alert-bg);
+      color: var(--alert-fg);
     }
 
     .metric-grid {
@@ -159,15 +219,170 @@
     }
     .metric-card {
       min-width: 0;
-      min-height: 116px;
+      min-height: 132px;
       padding: 16px;
       border: 1px solid var(--line);
-      border-radius: 6px;
+      border-top: 3px solid #cfd9d4;
+      border-radius: 8px;
       background: var(--surface);
+      box-shadow: 0 2px 10px rgba(32, 54, 45, .03);
+      transition: border-color .15s ease, transform .15s ease;
     }
-    .metric-label { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
-    .metric-value { margin: 15px 0 0; color: #202824; font-size: clamp(23px, 2.5vw, 29px); line-height: 1.3; font-weight: 650; letter-spacing: -.01em; }
+    .metric-card.is-ok { border-top-color: #198754; }
+    .metric-card.is-warn { border-top-color: #d39218; background: linear-gradient(180deg, #fffdf7, #fff 40%); }
+    .metric-card.is-alert { border-top-color: #c9372c; background: linear-gradient(180deg, #fff8f7, #fff 40%); }
+    .metric-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .metric-label { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; font-weight: 600; }
+    .metric-badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--surface-subtle);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .metric-badge.is-ok { color: var(--ok-fg); background: var(--ok-bg); border-color: var(--ok-bd); }
+    .metric-badge.is-warn { color: var(--warn-fg); background: var(--warn-bg); border-color: var(--warn-bd); }
+    .metric-badge.is-alert { color: var(--alert-fg); background: var(--alert-bg); border-color: var(--alert-bd); }
+    .metric-value { margin: 14px 0 0; color: #202824; font-size: clamp(23px, 2.5vw, 29px); line-height: 1.25; font-weight: 700; letter-spacing: -.01em; }
+    .metric-range { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
     .metric-unit { color: var(--muted); font-size: 12px; font-weight: 500; letter-spacing: 0; }
+    .ai-card {
+      margin-top: 20px;
+      padding: 20px 22px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: 0 4px 16px rgba(32, 54, 45, .035);
+    }
+    .ai-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #edf1ef;
+    }
+    .ai-head-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .ai-head h2 { margin: 0; font-size: 15px; font-weight: 700; color: #202824; }
+    .ai-source {
+      padding: 3px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-subtle);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .ai-trends {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .ai-trend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border: 1px solid #e2e8e5;
+      border-radius: 8px;
+      background: #f8faf9;
+      color: #34413c;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .ai-trend-chip.is-ok { color: var(--ok-fg); background: var(--ok-bg); border-color: var(--ok-bd); }
+    .ai-trend-chip.is-warn { color: var(--warn-fg); background: var(--warn-bg); border-color: var(--warn-bd); }
+    .ai-trend-chip.is-alert { color: var(--alert-fg); background: var(--alert-bg); border-color: var(--alert-bd); }
+    .ai-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .ai-panel {
+      padding: 14px 16px;
+      border-radius: 8px;
+      border: 1px solid #e8eeeb;
+      background: #fafcfb;
+    }
+    .ai-panel-summary {
+      border-left: 5px solid #198754;
+      background: linear-gradient(135deg, #eef8f3, #f8fcfa);
+      border-color: #cde6da;
+    }
+    .ai-panel-summary.is-warn {
+      border-left-color: #d39218;
+      background: linear-gradient(135deg, #fff6e0, #fffdf6);
+      border-color: #edd8a7;
+    }
+    .ai-panel-summary.is-alert {
+      border-left-color: #c9372c;
+      background: linear-gradient(135deg, #fdeceb, #fff8f7);
+      border-color: #f0c2bd;
+    }
+    .ai-panel-label {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    .ai-headline {
+      margin: 0 0 8px;
+      color: #134e3a;
+      font-size: 18px;
+      line-height: 1.4;
+      font-weight: 700;
+      letter-spacing: -.01em;
+    }
+    .ai-panel-summary.is-warn .ai-headline { color: #7a4b04; }
+    .ai-panel-summary.is-alert .ai-headline { color: #8f2219; }
+    .ai-summary { margin: 0; color: #24332d; font-size: 14.5px; line-height: 1.75; }
+    .ai-findings {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: #34413c;
+      font-size: 13px;
+      line-height: 1.65;
+      display: grid;
+      gap: 8px;
+    }
+    .ai-findings li {
+      position: relative;
+      padding-left: 16px;
+    }
+    .ai-findings li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .ai-disclaimer {
+      margin: 14px 0 0;
+      padding-top: 10px;
+      border-top: 1px solid #edf1ef;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.5;
+    }
+    @media (max-width: 760px) {
+      .ai-grid { grid-template-columns: 1fr; }
+    }
     .trend-card {
       margin-top: 24px;
       padding: 20px;
@@ -227,6 +442,8 @@
     .trend-chart { display: block; width: 100%; height: auto; overflow: visible; }
     .chart-grid line { stroke: #e9eeeb; stroke-width: 1; }
     .chart-grid .chart-plot-background { fill: #fbfdfc; stroke: #edf2ef; }
+    .chart-grid .chart-normal-band { fill: rgba(25, 135, 84, .07); }
+    .chart-grid .chart-normal-edge { stroke: rgba(25, 135, 84, .32); stroke-dasharray: 4 4; stroke-width: 1; }
     .chart-grid .chart-vertical { stroke: #e9eeeb; stroke-dasharray: 3 5; }
     .chart-grid text { fill: #77847e; font: 11px "Leelawadee UI", Tahoma, sans-serif; }
     .trend-area { fill: url(#trend-area-fill); }
@@ -267,9 +484,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--line);
     }
+    .history-head-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .button-compact { min-height: 34px; padding: 0 12px; font-size: 12px; }
     .history-head h2 { margin: 0; font-size: 14px; font-weight: 650; }
     .updated { color: var(--muted); font-size: 12px; white-space: nowrap; }
     .table-wrap { overflow-x: auto; }
@@ -366,33 +586,95 @@
                 <option value="all">ทุกโหนด</option>
               </select>
             </label>
+            <label id="refresh-interval-wrap" class="node-filter">
+              รีเฟรชอัตโนมัติ
+              <select id="refresh-interval" aria-label="รอบรีเฟรชอัตโนมัติ">
+                <option value="5000">ทุก 5 วิ</option>
+                <option value="15000">ทุก 15 วิ</option>
+                <option value="30000" selected>ทุก 30 วิ</option>
+                <option value="0">ปิด</option>
+              </select>
+            </label>
             <button id="refresh-button" class="button button-secondary" type="button">อัปเดตข้อมูล</button>
             <button id="logout-button" class="button button-secondary" type="button">ออกจากระบบ</button>
           </div>
         </div>
 
         <p id="demo-notice" class="demo-notice hidden" role="status">
-          ข้อมูลจำลองสำหรับทดสอบ UI เท่านั้น ไม่ใช่ข้อมูลจริง
+          ข้อมูลจำลองสำหรับทดสอบ UI เท่านั้น ไม่ใช่ข้อมูลจริง (ลองสลับตัวกรอง "โหนด" ด้านบนเพื่อดูสถานะปกติ/เฝ้าระวัง)
         </p>
 
+        <div id="status-strip" class="status-strip" aria-label="สถานะเซ็นเซอร์">
+          <span id="live-status" class="status-pill">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="live-status-text">รอข้อมูลจากโหนด</span>
+          </span>
+          <span id="finger-status" class="status-pill hidden">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="finger-status-text"></span>
+          </span>
+        </div>
+
+        <div id="alert-banner" class="alert-banner hidden" role="alert"></div>
+
         <div class="metric-grid" aria-label="ค่าสัญญาณชีพล่าสุด">
-          <article class="metric-card">
-            <p class="metric-label">ชีพจร</p>
+          <article id="card-hr" class="metric-card">
+            <div class="metric-head">
+              <p class="metric-label">ชีพจร</p>
+              <span id="badge-hr" class="metric-badge">รอข้อมูล</span>
+            </div>
             <p id="heart-rate" class="metric-value">—</p>
+            <p class="metric-range">เกณฑ์ปกติ 60–100 bpm</p>
           </article>
-          <article class="metric-card">
-            <p class="metric-label">ออกซิเจนในเลือด · SpO₂</p>
+          <article id="card-spo2" class="metric-card">
+            <div class="metric-head">
+              <p class="metric-label">ออกซิเจนในเลือด · SpO₂</p>
+              <span id="badge-spo2" class="metric-badge">รอข้อมูล</span>
+            </div>
             <p id="spo2" class="metric-value">—</p>
+            <p class="metric-range">เกณฑ์ปกติ ≥ 95%</p>
           </article>
-          <article class="metric-card">
-            <p class="metric-label">อุณหภูมิร่างกาย</p>
+          <article id="card-body-temp" class="metric-card">
+            <div class="metric-head">
+              <p class="metric-label">อุณหภูมิร่างกาย</p>
+              <span id="badge-body-temp" class="metric-badge">รอข้อมูล</span>
+            </div>
             <p id="body-temp" class="metric-value">—</p>
+            <p class="metric-range">เกณฑ์ปกติ 36.0–37.5 °C</p>
           </article>
-          <article class="metric-card">
-            <p class="metric-label">อุณหภูมิเครื่อง</p>
+          <article id="card-machine-temp" class="metric-card">
+            <div class="metric-head">
+              <p class="metric-label">อุณหภูมิเครื่อง</p>
+              <span id="badge-machine-temp" class="metric-badge">รอข้อมูล</span>
+            </div>
             <p id="machine-temp" class="metric-value">—</p>
+            <p class="metric-range">เกณฑ์ปกติ ≤ 45.0 °C</p>
           </article>
         </div>
+
+        <section class="ai-card" aria-labelledby="ai-heading">
+          <div class="ai-head">
+            <div class="ai-head-title">
+              <h2 id="ai-heading">วิเคราะห์แนวโน้มและความเสี่ยง (AI)</h2>
+              <span id="ai-risk-badge" class="metric-badge">รอข้อมูล</span>
+              <span id="ai-source-badge" class="ai-source hidden"></span>
+            </div>
+            <button id="ai-analyze-button" class="button button-compact" type="button">วิเคราะห์ด้วย AI</button>
+          </div>
+          <div id="ai-trends" class="ai-trends hidden" aria-label="แนวโน้มตัวชี้วัด"></div>
+          <div class="ai-grid">
+            <div id="ai-summary-panel" class="ai-panel ai-panel-summary">
+              <p class="ai-panel-label">สรุปคำตอบและคำแนะนำ</p>
+              <p id="ai-headline" class="ai-headline">พร้อมวิเคราะห์ข้อมูลสัญญาณชีพ</p>
+              <p id="ai-summary" class="ai-summary">กดปุ่ม "วิเคราะห์ด้วย AI" เพื่อประเมินคะแนนความเสี่ยงและสรุปแนวโน้มสัญญาณชีพ</p>
+            </div>
+            <div class="ai-panel">
+              <p class="ai-panel-label">ประเด็นที่พบ</p>
+              <ul id="ai-findings" class="ai-findings"></ul>
+            </div>
+          </div>
+          <p id="ai-disclaimer" class="ai-disclaimer">การวิเคราะห์นี้เป็นข้อมูลเบื้องต้นเพื่อช่วยเฝ้าระวังเท่านั้น ไม่ใช่การวินิจฉัยทางการแพทย์</p>
+        </section>
 
         <section class="trend-card" aria-labelledby="trend-heading">
           <div class="trend-head">
@@ -423,9 +705,11 @@
           <div id="trend-summary" class="trend-summary hidden" role="status" aria-live="polite">
             <span id="trend-count" class="trend-count"></span>
             <span class="trend-summary-divider" aria-hidden="true"></span>
-            <span class="trend-latest-label">ค่าล่าสุด</span>
+            <span class="trend-latest-label">ล่าสุด</span>
             <strong id="trend-latest"></strong>
             <span id="trend-latest-time" class="trend-latest-time"></span>
+            <span class="trend-summary-divider" aria-hidden="true"></span>
+            <span id="trend-stats" class="trend-latest-time"></span>
           </div>
           <div class="chart-wrap">
             <svg id="trend-chart" class="trend-chart" viewBox="0 0 760 250" role="img"
@@ -454,7 +738,10 @@
         <section class="history-card" aria-labelledby="history-title">
           <div class="history-head">
             <h2 id="history-title">ประวัติการวัด</h2>
-            <span id="updated-at" class="updated">ยังไม่มีการอัปเดต</span>
+            <div class="history-head-right">
+              <span id="updated-at" class="updated">ยังไม่มีการอัปเดต</span>
+              <button id="export-csv-button" class="button button-secondary button-compact hidden" type="button">ส่งออก CSV</button>
+            </div>
           </div>
           <div id="empty-state" class="empty-state">กำลังโหลดข้อมูล…</div>
           <div id="history-table-wrap" class="table-wrap hidden">
@@ -494,7 +781,25 @@
     const historyBody = document.querySelector("#history-body");
     const nodeFilterWrap = document.querySelector("#node-filter-wrap");
     const nodeFilter = document.querySelector("#node-filter");
+    const refreshIntervalWrap = document.querySelector("#refresh-interval-wrap");
+    const refreshIntervalSelect = document.querySelector("#refresh-interval");
     const refreshButton = document.querySelector("#refresh-button");
+    const logoutButton = document.querySelector("#logout-button");
+    const exportCsvButton = document.querySelector("#export-csv-button");
+    const liveStatus = document.querySelector("#live-status");
+    const liveStatusText = document.querySelector("#live-status-text");
+    const fingerStatus = document.querySelector("#finger-status");
+    const fingerStatusText = document.querySelector("#finger-status-text");
+    const alertBanner = document.querySelector("#alert-banner");
+    const aiAnalyzeButton = document.querySelector("#ai-analyze-button");
+    const aiRiskBadge = document.querySelector("#ai-risk-badge");
+    const aiSourceBadge = document.querySelector("#ai-source-badge");
+    const aiTrends = document.querySelector("#ai-trends");
+    const aiSummaryPanel = document.querySelector("#ai-summary-panel");
+    const aiHeadline = document.querySelector("#ai-headline");
+    const aiSummary = document.querySelector("#ai-summary");
+    const aiFindings = document.querySelector("#ai-findings");
+    const aiDisclaimer = document.querySelector("#ai-disclaimer");
     const trendMetric = document.querySelector("#trend-metric");
     const trendRange = document.querySelector("#trend-range");
     const trendChart = document.querySelector("#trend-chart");
@@ -508,17 +813,24 @@
     const trendCount = document.querySelector("#trend-count");
     const trendLatest = document.querySelector("#trend-latest");
     const trendLatestTime = document.querySelector("#trend-latest-time");
+    const trendStats = document.querySelector("#trend-stats");
     const trendTooltip = document.querySelector("#trend-tooltip");
     const trendTooltipDate = document.querySelector("#trend-tooltip-date");
     const trendTooltipValue = document.querySelector("#trend-tooltip-value");
     const trendChartTitle = document.querySelector("#trend-chart-title");
     const trendChartDescription = document.querySelector("#trend-chart-description");
     const trendMetrics = {
-      hr: { label: "ชีพจร", unit: "bpm", digits: 0 },
-      spo2: { label: "SpO₂", unit: "%", digits: 0 },
-      body_temp: { label: "อุณหภูมิร่างกาย", unit: "°C", digits: 1 },
-      machine_temp: { label: "อุณหภูมิเครื่อง", unit: "°C", digits: 1 },
+      hr: { label: "ชีพจร", unit: "bpm", digits: 0, normalMin: 60, normalMax: 100 },
+      spo2: { label: "SpO₂", unit: "%", digits: 0, normalMin: 95, normalMax: 100 },
+      body_temp: { label: "อุณหภูมิร่างกาย", unit: "°C", digits: 1, normalMin: 36.0, normalMax: 37.5 },
+      machine_temp: { label: "อุณหภูมิเครื่อง", unit: "°C", digits: 1, normalMin: 15.0, normalMax: 45.0 },
     };
+    const metricCardConfig = [
+      { key: "hr", cardId: "#card-hr", badgeId: "#badge-hr", valueId: "#heart-rate", unit: "bpm", digits: 0 },
+      { key: "spo2", cardId: "#card-spo2", badgeId: "#badge-spo2", valueId: "#spo2", unit: "%", digits: 0 },
+      { key: "body_temp", cardId: "#card-body-temp", badgeId: "#badge-body-temp", valueId: "#body-temp", unit: "°C", digits: 1 },
+      { key: "machine_temp", cardId: "#card-machine-temp", badgeId: "#badge-machine-temp", valueId: "#machine-temp", unit: "°C", digits: 1 },
+    ];
     let viewerSession = null;
     let refreshTimer = null;
     let allReadings = [];
@@ -575,7 +887,7 @@
         dashboardView.classList.remove("hidden");
         await refreshReadings();
         if (viewerSession) {
-          refreshTimer = window.setInterval(refreshReadings, 30000);
+          restartRefreshTimer();
         }
       } catch (error) {
         setMessage(loginMessage, error instanceof TypeError
@@ -649,6 +961,81 @@
       nodeFilterWrap.classList.toggle("hidden", nodeIds.length === 0);
     }
 
+    function restartRefreshTimer() {
+      if (refreshTimer) window.clearInterval(refreshTimer);
+      refreshTimer = null;
+      if (!viewerSession) return;
+      const ms = Number(refreshIntervalSelect.value);
+      if (Number.isFinite(ms) && ms > 0) {
+        refreshTimer = window.setInterval(refreshReadings, ms);
+      }
+    }
+
+    function evaluateVital(key, rawValue) {
+      if (rawValue === null || rawValue === undefined || rawValue === "" || !Number.isFinite(Number(rawValue))) {
+        return { level: "none", label: "รอข้อมูล" };
+      }
+      const value = Number(rawValue);
+      if (key === "hr") {
+        if (value < 50 || value > 115) return { level: "alert", label: "ผิดปกติ" };
+        if (value < 60 || value > 100) return { level: "warn", label: "เฝ้าระวัง" };
+        return { level: "ok", label: "ปกติ" };
+      }
+      if (key === "spo2") {
+        if (value < 90) return { level: "alert", label: "ผิดปกติ" };
+        if (value < 95) return { level: "warn", label: "เฝ้าระวัง" };
+        return { level: "ok", label: "ปกติ" };
+      }
+      if (key === "body_temp") {
+        if (value < 35.0 || value >= 38.5) return { level: "alert", label: "ผิดปกติ" };
+        if (value < 36.0 || value > 37.5) return { level: "warn", label: "เฝ้าระวัง" };
+        return { level: "ok", label: "ปกติ" };
+      }
+      if (key === "machine_temp") {
+        if (value > 55.0) return { level: "alert", label: "ผิดปกติ" };
+        if (value > 45.0) return { level: "warn", label: "เฝ้าระวัง" };
+        return { level: "ok", label: "ปกติ" };
+      }
+      return { level: "none", label: "รอข้อมูล" };
+    }
+
+    function setPillState(element, level) {
+      element.classList.remove("is-ok", "is-warn", "is-alert");
+      if (level === "ok") element.classList.add("is-ok");
+      else if (level === "warn") element.classList.add("is-warn");
+      else if (level === "alert") element.classList.add("is-alert");
+    }
+
+    function updateSensorStrip(latest) {
+      if (!latest) {
+        setPillState(liveStatus, "none");
+        liveStatusText.textContent = "รอข้อมูลจากโหนด";
+        fingerStatus.classList.add("hidden");
+        return;
+      }
+      const latestMs = toMilliseconds(latest.t);
+      const ageSeconds = latestMs ? Math.max(0, Math.round((Date.now() - latestMs) / 1000)) : Infinity;
+      const nodeLabel = latest.node_id ? ` (${latest.node_id})` : "";
+      if (ageSeconds <= 60) {
+        setPillState(liveStatus, "ok");
+        liveStatusText.textContent = ageSeconds <= 5
+          ? `ออนไลน์${nodeLabel} · อัปเดตเมื่อสักครู่`
+          : `ออนไลน์${nodeLabel} · ${ageSeconds} วินาทีที่แล้ว`;
+      } else {
+        setPillState(liveStatus, "warn");
+        const ageMin = Math.round(ageSeconds / 60);
+        liveStatusText.textContent = `ออฟไลน์${nodeLabel} · ล่าสุด ${ageMin} นาทีที่แล้ว`;
+      }
+
+      if (typeof latest.finger === "boolean") {
+        fingerStatus.classList.remove("hidden");
+        setPillState(fingerStatus, latest.finger ? "ok" : "warn");
+        fingerStatusText.textContent = latest.finger ? "เซ็นเซอร์: วางนิ้วอยู่" : "เซ็นเซอร์: รอวางนิ้ว";
+      } else {
+        fingerStatus.classList.add("hidden");
+      }
+    }
+
     function applyNodeFilterAndRender() {
       const selectedNode = nodeFilter.value || "all";
       const readings = selectedNode === "all"
@@ -656,22 +1043,42 @@
         : allReadings.filter((reading) => reading.node_id === selectedNode);
       currentReadings = readings;
       const latest = readings[0];
-      document.querySelector("#heart-rate").textContent = latest
-        ? formatValue(latest.hr, "bpm")
-        : "—";
-      document.querySelector("#spo2").textContent = latest
-        ? formatValue(latest.spo2, "%")
-        : "—";
-      document.querySelector("#body-temp").textContent = latest
-        ? formatValue(latest.body_temp, "°C", 1)
-        : "—";
-      document.querySelector("#machine-temp").textContent = latest
-        ? formatValue(latest.machine_temp, "°C", 1)
-        : "—";
+
+      const alerts = [];
+      let hasCritical = false;
+      for (const config of metricCardConfig) {
+        const raw = latest ? latest[config.key] : null;
+        const status = evaluateVital(config.key, raw);
+        const card = document.querySelector(config.cardId);
+        const badge = document.querySelector(config.badgeId);
+        document.querySelector(config.valueId).textContent = latest
+          ? formatValue(raw, config.unit, config.digits)
+          : "—";
+        setPillState(card, status.level);
+        setPillState(badge, status.level);
+        badge.textContent = status.label;
+        if (status.level === "warn" || status.level === "alert") {
+          if (status.level === "alert") hasCritical = true;
+          alerts.push(`${trendMetrics[config.key].label} (${formatValue(raw, config.unit, config.digits)} · ${status.label})`);
+        }
+      }
+
+      updateSensorStrip(latest);
+      if (alerts.length > 0) {
+        alertBanner.classList.remove("hidden");
+        alertBanner.classList.toggle("is-alert", hasCritical);
+        const prefix = hasCritical ? "แจ้งเตือนค่าผิดปกติ:" : "ควรเฝ้าระวัง:";
+        alertBanner.textContent = `${prefix} ${alerts.join(" · ")}`;
+      } else {
+        alertBanner.classList.add("hidden");
+        alertBanner.classList.remove("is-alert");
+        alertBanner.textContent = "";
+      }
 
       historyBody.replaceChildren();
       const recent = readings.slice(0, 12);
       historyTableWrap.classList.toggle("hidden", recent.length === 0);
+      exportCsvButton.classList.toggle("hidden", readings.length === 0);
       emptyState.classList.toggle("hidden", recent.length > 0);
       emptyState.textContent = recent.length ? "" : "ยังไม่มีข้อมูลการวัด";
       for (const reading of recent) {
@@ -684,7 +1091,241 @@
         addCell(row, formatValue(reading.machine_temp, "°C", 1));
         historyBody.append(row);
       }
+      renderAiAnalysis(computeLocalAnalysis(readings));
       renderTrend();
+    }
+
+    function computeLocalAnalysis(readings) {
+      const disclaimer = "การวิเคราะห์นี้เป็นข้อมูลเบื้องต้นเพื่อช่วยเฝ้าระวังเท่านั้น ไม่ใช่การวินิจฉัยทางการแพทย์";
+      if (!readings || readings.length === 0) {
+        return {
+          source: "local",
+          risk_score: 0,
+          risk_level: "unknown",
+          risk_label: "รอข้อมูล",
+          findings: [],
+          summary: "ยังไม่มีข้อมูลสัญญาณชีพสำหรับวิเคราะห์ กรุณารอข้อมูลจากโหนดเซ็นเซอร์",
+          disclaimer,
+        };
+      }
+      const ordered = [...readings].sort((a, b) => toMilliseconds(a.t) - toMilliseconds(b.t));
+      const nums = (key) => ordered
+        .map((item) => item[key])
+        .filter((v) => v !== null && v !== undefined && v !== "" && Number.isFinite(Number(v)))
+        .map(Number);
+      const hrVals = nums("hr");
+      const spo2Vals = nums("spo2");
+      const tempVals = nums("body_temp");
+      const machVals = nums("machine_temp");
+      const latestHr = hrVals.at(-1);
+      const latestSpo2 = spo2Vals.at(-1);
+      const latestTemp = tempVals.at(-1);
+      const latestMach = machVals.at(-1);
+
+      const scoreHr = (v) => (v === undefined ? 0 : (v <= 40 || v >= 131) ? 3 : v >= 111 ? 2 : (v <= 50 || v >= 91) ? 1 : 0);
+      const scoreSpo2 = (v) => (v === undefined ? 0 : v <= 91 ? 3 : v <= 93 ? 2 : v <= 95 ? 1 : 0);
+      const scoreTemp = (v) => (v === undefined ? 0 : (v <= 35.0 || v >= 39.1) ? 3 : v >= 38.1 ? 2 : (v <= 36.0 || v >= 37.6) ? 1 : 0);
+      const sHr = scoreHr(latestHr);
+      const sSp = scoreSpo2(latestSpo2);
+      const sTp = scoreTemp(latestTemp);
+      const riskScore = sHr + sSp + sTp;
+      const maxSingle = Math.max(sHr, sSp, sTp);
+      const riskLevel = (riskScore >= 5 || maxSingle >= 3) ? "high" : riskScore >= 2 ? "moderate" : "low";
+      const riskLabel = riskLevel === "high" ? "ความเสี่ยงสูง" : riskLevel === "moderate" ? "ควรเฝ้าระวัง" : "ความเสี่ยงต่ำ";
+
+      const trendOf = (vals, delta) => {
+        if (vals.length < 4) return "stable";
+        const mid = Math.floor(vals.length / 2);
+        const early = vals.slice(0, mid).reduce((a, b) => a + b, 0) / mid;
+        const late = vals.slice(mid).reduce((a, b) => a + b, 0) / (vals.length - mid);
+        return late - early >= delta ? "rising" : late - early <= -delta ? "falling" : "stable";
+      };
+
+      const hrTrend = trendOf(hrVals, 5);
+      const spo2Trend = trendOf(spo2Vals, 1.5);
+      const tempTrend = trendOf(tempVals, 0.3);
+
+      const findings = [];
+      if (latestHr !== undefined) {
+        if (latestHr > 100) findings.push(`ชีพจรล่าสุดสูงกว่าเกณฑ์ปกติ (${latestHr.toFixed(0)} bpm)`);
+        else if (latestHr < 60) findings.push(`ชีพจรล่าสุดต่ำกว่าเกณฑ์ปกติ (${latestHr.toFixed(0)} bpm)`);
+        if (hrTrend === "rising") findings.push("แนวโน้มชีพจรมีทิศทางเพิ่มขึ้นต่อเนื่อง");
+        else if (hrTrend === "falling") findings.push("แนวโน้มชีพจรมีทิศทางลดลง");
+      }
+      if (latestSpo2 !== undefined) {
+        if (latestSpo2 < 95) findings.push(`ค่า SpO₂ ล่าสุดต่ำกว่าเกณฑ์ปกติ (${latestSpo2.toFixed(0)}%) ควรตรวจสอบการวางนิ้วและวัดซ้ำ`);
+        if (spo2Trend === "falling") findings.push("แนวโน้มค่า SpO₂ ลดลง ควรเฝ้าระวังอย่างใกล้ชิด");
+      }
+      if (latestTemp !== undefined) {
+        if (latestTemp > 37.5) findings.push(`อุณหภูมิร่างกายล่าสุดสูงกว่าปกติ (${latestTemp.toFixed(1)} °C)`);
+        else if (latestTemp < 36.0) findings.push(`อุณหภูมิร่างกายล่าสุดค่อนข้างต่ำ (${latestTemp.toFixed(1)} °C)`);
+      }
+      if (latestMach !== undefined && latestMach > 45.0) {
+        findings.push(`อุณหภูมิเครื่องค่อนข้างสูง (${latestMach.toFixed(1)} °C)`);
+      }
+      const hasTrendWarning = hrTrend === "rising" || spo2Trend === "falling" || tempTrend === "rising";
+      if (findings.length === 0) {
+        findings.push("สัญญาณชีพหลักทั้งหมดอยู่ในเกณฑ์ปกติและมีแนวโน้มคงที่");
+      }
+
+      const summary = riskLevel === "high"
+        ? `คะแนนเฝ้าระวัง ${riskScore} (${riskLabel}) — พบค่าผิดปกติสำคัญ แนะนำให้วัดซ้ำทันทีและปรึกษาบุคลากรทางการแพทย์หากค่าผิดปกติต่อเนื่อง`
+        : riskLevel === "moderate"
+          ? `คะแนนเฝ้าระวัง ${riskScore} (${riskLabel}) — พบค่าบางรายการออกนอกเกณฑ์ แนะนำให้นั่งพัก 2–3 นาทีแล้ววัดซ้ำเพื่อติดตามแนวโน้ม`
+          : hasTrendWarning
+            ? `คะแนนเฝ้าระวัง ${riskScore} (${riskLabel}) — ค่าล่าสุดยังอยู่ในเกณฑ์ปกติ แต่มีแนวโน้มเปลี่ยนแปลง ควรติดตามต่อเนื่อง`
+            : `คะแนนเฝ้าระวัง ${riskScore} (${riskLabel}) — สัญญาณชีพทั้งหมดอยู่ในเกณฑ์ปกติและคงที่ สามารถติดตามตามรอบปกติได้`;
+
+      return {
+        source: "rule-based",
+        risk_score: riskScore,
+        risk_level: riskLevel,
+        risk_label: riskLabel,
+        stats: {
+          hr: hrVals.length ? { trend: hrTrend, latest: latestHr } : null,
+          spo2: spo2Vals.length ? { trend: spo2Trend, latest: latestSpo2 } : null,
+          body_temp: tempVals.length ? { trend: tempTrend, latest: latestTemp } : null,
+        },
+        findings,
+        summary,
+        disclaimer,
+      };
+    }
+
+    function renderAiTrends(stats) {
+      aiTrends.replaceChildren();
+      if (!stats || typeof stats !== "object") {
+        aiTrends.classList.add("hidden");
+        return;
+      }
+      const configs = [
+        { key: "hr", label: "ชีพจร", warnOn: ["rising"] },
+        { key: "spo2", label: "SpO₂", warnOn: ["falling"] },
+        { key: "body_temp", label: "อุณหภูมิร่างกาย", warnOn: ["rising"] },
+      ];
+      const trendMeta = {
+        rising: { arrow: "↗", text: "เพิ่มขึ้น" },
+        falling: { arrow: "↘", text: "ลดลง" },
+        stable: { arrow: "→", text: "คงที่" },
+      };
+      let count = 0;
+      for (const cfg of configs) {
+        const entry = stats[cfg.key];
+        if (!entry || !entry.trend) continue;
+        const meta = trendMeta[entry.trend] || trendMeta.stable;
+        const chip = document.createElement("span");
+        const isWarn = cfg.warnOn.includes(entry.trend);
+        chip.className = `ai-trend-chip ${isWarn ? "is-warn" : "is-ok"}`;
+        chip.textContent = `${cfg.label}: ${meta.arrow} ${meta.text}`;
+        aiTrends.append(chip);
+        count += 1;
+      }
+      aiTrends.classList.toggle("hidden", count === 0);
+    }
+
+    function renderAiAnalysis(result) {
+      const levelMap = { low: "ok", moderate: "warn", high: "alert" };
+      const pillLevel = levelMap[result.risk_level] || "none";
+      setPillState(aiRiskBadge, pillLevel);
+      setPillState(aiSummaryPanel, pillLevel);
+      aiRiskBadge.textContent = result.risk_level === "unknown"
+        ? "รอข้อมูล"
+        : `${result.risk_label} (คะแนน ${result.risk_score})`;
+
+      if (result.source === "gemini") {
+        aiSourceBadge.textContent = "Gemini AI";
+        aiSourceBadge.classList.remove("hidden");
+      } else if (result.source === "demo-ai") {
+        const nowText = new Intl.DateTimeFormat("th-TH", { timeStyle: "medium" }).format(new Date());
+        aiSourceBadge.textContent = `AI จำลอง · ${nowText}`;
+        aiSourceBadge.classList.remove("hidden");
+      } else if (result.source === "rule-based") {
+        aiSourceBadge.textContent = "วิเคราะห์อัตโนมัติ (ออฟไลน์)";
+        aiSourceBadge.classList.remove("hidden");
+      } else {
+        aiSourceBadge.classList.add("hidden");
+      }
+
+      renderAiTrends(result.stats);
+      const hasWarningTrend = result.stats?.hr?.trend === "rising"
+        || result.stats?.spo2?.trend === "falling"
+        || result.stats?.body_temp?.trend === "rising";
+      const headline = result.risk_level === "high"
+        ? "ความเสี่ยงสูง — ควรวัดซ้ำและปรึกษาแพทย์"
+        : result.risk_level === "moderate"
+          ? "ควรเฝ้าระวัง — พบค่าสัญญาณชีพออกนอกเกณฑ์"
+          : result.risk_level === "low"
+            ? (hasWarningTrend ? "ค่าล่าสุดปกติ — แต่พบแนวโน้มเปลี่ยนแปลง" : "สัญญาณชีพปกติและคงที่")
+            : "รอข้อมูลสำหรับวิเคราะห์";
+      aiHeadline.textContent = headline;
+      aiSummary.textContent = result.summary || "—";
+      aiFindings.replaceChildren();
+      const items = Array.isArray(result.findings) && result.findings.length
+        ? result.findings
+        : ["ยังไม่มีประเด็นผิดปกติ"];
+      for (const item of items) {
+        const li = document.createElement("li");
+        li.textContent = item;
+        aiFindings.append(li);
+      }
+      if (result.disclaimer) aiDisclaimer.textContent = result.disclaimer;
+    }
+
+    function buildDemoAiResult(readings) {
+      const base = computeLocalAnalysis(readings);
+      const selected = nodeFilter.value || "all";
+      const target = selected === "all" ? "ทุกโหนด" : selected;
+      let summary = base.summary;
+      if (base.risk_level === "high" || base.risk_level === "moderate") {
+        summary = `(${target}) พบชีพจรและอุณหภูมิร่างกายสูงขึ้นร่วมกับค่า SpO₂ ลดลง (คะแนนเฝ้าระวัง ${base.risk_score}) แนะนำให้นั่งพัก 2–3 นาที ตรวจสอบการวางนิ้วแล้ววัดซ้ำ หากยังผิดปกติควรปรึกษาแพทย์`;
+      } else if (base.risk_level === "low") {
+        const hasWarningTrend = base.stats?.hr?.trend === "rising" || base.stats?.spo2?.trend === "falling";
+        summary = hasWarningTrend
+          ? `(${target}) ค่าล่าสุดยังอยู่ในเกณฑ์ปกติ แต่เมื่อรวมข้อมูล ${readings.length} จุดพบการเปลี่ยนแปลงแนวโน้ม แนะนำให้ลองเลือกดูแยกแต่ละโหนดเพื่อติดตามอย่างละเอียด`
+          : `(${target}) จากข้อมูลล่าสุด ${readings.length} จุด ชีพจร SpO₂ และอุณหภูมิร่างกายอยู่ในเกณฑ์ปกติและมีเสถียรภาพดี สามารถติดตามต่อเนื่องตามรอบปกติได้`;
+      }
+      return { ...base, source: "demo-ai", summary };
+    }
+
+    async function runAiAnalysis() {
+      aiAnalyzeButton.disabled = true;
+      aiAnalyzeButton.textContent = "กำลังวิเคราะห์…";
+      aiSummary.textContent = "กำลังวิเคราะห์ข้อมูลสัญญาณชีพ…";
+      if (!viewerSession) {
+        await new Promise((resolve) => window.setTimeout(resolve, 450));
+        renderAiAnalysis(buildDemoAiResult(currentReadings));
+        aiAnalyzeButton.disabled = false;
+        aiAnalyzeButton.textContent = "วิเคราะห์ด้วย AI";
+        return;
+      }
+      try {
+        const response = await fetch(`${viewerSession.apiUrl}/analyze`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${viewerSession.token}`,
+          },
+          body: JSON.stringify({
+            userID: viewerSession.userID,
+            node_id: nodeFilter.value || "all",
+            limit: 100,
+          }),
+        });
+        const result = await readJson(response);
+        if (response.status === 401) {
+          signOut("เซสชันผู้ดูแลหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง");
+          return;
+        }
+        if (!response.ok || !result.success) {
+          throw new Error("วิเคราะห์ไม่สำเร็จ");
+        }
+        renderAiAnalysis(result);
+      } catch {
+        renderAiAnalysis(computeLocalAnalysis(currentReadings));
+      } finally {
+        aiAnalyzeButton.disabled = false;
+        aiAnalyzeButton.textContent = "วิเคราะห์ด้วย AI";
+      }
     }
 
     function renderReadings(records) {
@@ -757,6 +1398,7 @@
         trendCount.textContent = "";
         trendLatest.textContent = "";
         trendLatestTime.textContent = "";
+        trendStats.textContent = "";
         return;
       }
 
@@ -799,6 +1441,35 @@
         rx: 7,
         class: "chart-plot-background",
       }));
+      if (Number.isFinite(metric.normalMin) && Number.isFinite(metric.normalMax)) {
+        const bandTopVal = Math.min(yMaximum, metric.normalMax);
+        const bandBotVal = Math.max(yMinimum, metric.normalMin);
+        if (bandTopVal > bandBotVal) {
+          const bandY = yAt(bandTopVal);
+          const bandHeight = yAt(bandBotVal) - bandY;
+          chartGrid.append(createSvgElement("rect", {
+            x: margin.left,
+            y: bandY,
+            width: plotWidth,
+            height: bandHeight,
+            class: "chart-normal-band",
+          }));
+          if (metric.normalMax < yMaximum && metric.normalMax > yMinimum) {
+            chartGrid.append(createSvgElement("line", {
+              x1: margin.left, y1: yAt(metric.normalMax),
+              x2: width - margin.right, y2: yAt(metric.normalMax),
+              class: "chart-normal-edge",
+            }));
+          }
+          if (metric.normalMin < yMaximum && metric.normalMin > yMinimum) {
+            chartGrid.append(createSvgElement("line", {
+              x1: margin.left, y1: yAt(metric.normalMin),
+              x2: width - margin.right, y2: yAt(metric.normalMin),
+              class: "chart-normal-edge",
+            }));
+          }
+        }
+      }
       for (let index = 0; index <= tickCount; index += 1) {
         const value = yMinimum + step * index;
         const y = yAt(value);
@@ -868,43 +1539,94 @@
       }
 
       const latest = readings[readings.length - 1];
+      const average = values.reduce((sum, value) => sum + value, 0) / values.length;
       trendCount.textContent = `${readings.length} จุด`;
       trendLatest.textContent = formatValue(latest.value, metric.unit, metric.digits);
       trendLatestTime.textContent = timeFormatter.format(new Date(latest.time));
+      trendStats.textContent = `ต่ำสุด ${formatValue(minimum, metric.unit, metric.digits)} · เฉลี่ย ${formatValue(average, metric.unit, metric.digits)} · สูงสุด ${formatValue(maximum, metric.unit, metric.digits)}`;
       trendSummary.setAttribute("aria-label", `${readings.length} จุดข้อมูล ค่าล่าสุด ${
         formatValue(latest.value, metric.unit, metric.digits)
       } เวลา ${formatTime(latest.time)}`);
     }
 
+    function exportReadingsCsv() {
+      if (currentReadings.length === 0) return;
+      const escapeCell = (value) => {
+        const text = value === null || value === undefined ? "" : String(value);
+        return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+      };
+      const header = ["timestamp", "node_id", "hr", "spo2", "body_temp", "machine_temp", "finger"];
+      const lines = [header.join(",")];
+      for (const reading of currentReadings) {
+        const ms = toMilliseconds(reading.t);
+        const iso = ms ? new Date(ms).toISOString() : "";
+        lines.push([
+          iso,
+          reading.node_id ?? "",
+          reading.hr ?? "",
+          reading.spo2 ?? "",
+          reading.body_temp ?? "",
+          reading.machine_temp ?? "",
+          typeof reading.finger === "boolean" ? reading.finger : "",
+        ].map(escapeCell).join(","));
+      }
+      const blob = new Blob([`\uFEFF${lines.join("\r\n")}`], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
+      const nodeSuffix = nodeFilter.value && nodeFilter.value !== "all" ? `-${nodeFilter.value}` : "";
+      link.href = url;
+      link.download = `vsm-readings${nodeSuffix}-${stamp}.csv`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
     function showDemoDashboard() {
-      const values = [
-        { hr: 71, spo2: 97, body_temp: 36.5, machine_temp: 30.1 },
-        { hr: 73, spo2: 98, body_temp: 36.6, machine_temp: 30.4 },
-        { hr: 72, spo2: 97, body_temp: 36.6, machine_temp: 30.7 },
-        { hr: 75, spo2: 98, body_temp: 36.7, machine_temp: 30.5 },
-        { hr: 74, spo2: 99, body_temp: 36.7, machine_temp: 30.8 },
-        { hr: 72, spo2: 98, body_temp: 36.6, machine_temp: 31.0 },
-        { hr: 76, spo2: 97, body_temp: 36.8, machine_temp: 31.2 },
-        { hr: 74, spo2: 98, body_temp: 36.7, machine_temp: 31.0 },
-        { hr: 73, spo2: 97, body_temp: 36.6, machine_temp: 31.4 },
-        { hr: 75, spo2: 98, body_temp: 36.8, machine_temp: 31.6 },
-        { hr: 72, spo2: 99, body_temp: 36.7, machine_temp: 31.3 },
-        { hr: 74, spo2: 98, body_temp: 36.7, machine_temp: 31.8 },
+      const node1Values = [
+        { hr: 71, spo2: 97, body_temp: 36.5, machine_temp: 30.1, finger: true },
+        { hr: 73, spo2: 98, body_temp: 36.6, machine_temp: 30.4, finger: true },
+        { hr: 72, spo2: 97, body_temp: 36.6, machine_temp: 30.7, finger: true },
+        { hr: 75, spo2: 98, body_temp: 36.7, machine_temp: 30.5, finger: true },
+        { hr: 74, spo2: 99, body_temp: 36.7, machine_temp: 30.8, finger: true },
+        { hr: 72, spo2: 98, body_temp: 36.6, machine_temp: 31.0, finger: true },
+        { hr: 76, spo2: 97, body_temp: 36.8, machine_temp: 31.2, finger: true },
+        { hr: 74, spo2: 98, body_temp: 36.7, machine_temp: 31.0, finger: true },
+        { hr: 73, spo2: 97, body_temp: 36.6, machine_temp: 31.4, finger: true },
+        { hr: 75, spo2: 98, body_temp: 36.8, machine_temp: 31.6, finger: true },
+        { hr: 72, spo2: 99, body_temp: 36.7, machine_temp: 31.3, finger: true },
+        { hr: 74, spo2: 98, body_temp: 36.7, machine_temp: 31.8, finger: true },
+      ];
+      const node2Values = [
+        { hr: 88, spo2: 96, body_temp: 37.1, machine_temp: 33.2, finger: true },
+        { hr: 95, spo2: 95, body_temp: 37.4, machine_temp: 34.0, finger: true },
+        { hr: 102, spo2: 94, body_temp: 37.7, machine_temp: 35.1, finger: true },
+        { hr: 106, spo2: 93, body_temp: 37.9, machine_temp: 35.8, finger: true },
       ];
       const now = Date.now();
-      const readings = values.map((value, index) => ({
-        node_id: "node-1",
-        ...value,
-        t: Math.floor((now - (values.length - index - 1) * 5 * 60 * 1000) / 1000),
-      }));
+      const readings = [
+        ...node1Values.map((value, index) => ({
+          node_id: "node-1",
+          ...value,
+          t: Math.floor((now - (node1Values.length - index - 1) * 5 * 60 * 1000) / 1000),
+        })),
+        ...node2Values.map((value, index) => ({
+          node_id: "node-2",
+          ...value,
+          t: Math.floor((now - (node2Values.length - index) * 4 * 60 * 1000) / 1000),
+        })),
+      ];
 
       loginView.classList.add("hidden");
       siteHeader.classList.remove("hidden");
       dashboardView.classList.remove("hidden");
-      dashboardActions.classList.add("hidden");
+      refreshIntervalWrap.classList.add("hidden");
+      refreshButton.classList.add("hidden");
+      logoutButton.classList.add("hidden");
       demoNotice.classList.remove("hidden");
       secureLabel.textContent = "โหมดตัวอย่าง · ไม่เชื่อมต่อ Cloud";
-      document.querySelector("#identity").textContent = "ข้อมูลจำลอง · ไม่ใช่ข้อมูลจริง";
+      document.querySelector("#identity").textContent = "ข้อมูลจำลอง · 2 โหนด (node-1 ปกติ, node-2 เฝ้าระวัง)";
       renderReadings([{ timestamp: now / 1000, data: readings }]);
     }
 
@@ -948,9 +1670,18 @@
       updateNodeOptions([]);
       renderTrend();
       historyBody.replaceChildren();
-      for (const id of ["heart-rate", "spo2", "body-temp", "machine-temp"]) {
-        document.querySelector(`#${id}`).textContent = "—";
+      for (const config of metricCardConfig) {
+        document.querySelector(config.valueId).textContent = "—";
+        const card = document.querySelector(config.cardId);
+        const badge = document.querySelector(config.badgeId);
+        setPillState(card, "none");
+        setPillState(badge, "none");
+        badge.textContent = "รอข้อมูล";
       }
+      updateSensorStrip(null);
+      alertBanner.classList.add("hidden");
+      alertBanner.textContent = "";
+      exportCsvButton.classList.add("hidden");
       historyTableWrap.classList.add("hidden");
       emptyState.classList.remove("hidden");
       emptyState.textContent = "ยังไม่มีข้อมูลการวัด";
@@ -958,18 +1689,23 @@
       setMessage(dashboardMessage, "");
       dashboardView.classList.add("hidden");
       siteHeader.classList.add("hidden");
-      dashboardActions.classList.remove("hidden");
+      refreshIntervalWrap.classList.remove("hidden");
+      refreshButton.classList.remove("hidden");
+      logoutButton.classList.remove("hidden");
       demoNotice.classList.add("hidden");
       loginView.classList.remove("hidden");
       setMessage(loginMessage, message);
     }
 
     refreshButton.addEventListener("click", refreshReadings);
+    refreshIntervalSelect.addEventListener("change", restartRefreshTimer);
     nodeFilter.addEventListener("change", applyNodeFilterAndRender);
+    exportCsvButton.addEventListener("click", exportReadingsCsv);
+    aiAnalyzeButton.addEventListener("click", runAiAnalysis);
     trendMetric.addEventListener("change", renderTrend);
     trendRange.addEventListener("change", renderTrend);
     window.addEventListener("resize", renderTrend);
-    document.querySelector("#logout-button").addEventListener("click", () => signOut());
+    logoutButton.addEventListener("click", () => signOut());
 
     const isLocalDemo = new URLSearchParams(location.search).get("demo") === "1"
       && ["localhost", "127.0.0.1"].includes(location.hostname);
