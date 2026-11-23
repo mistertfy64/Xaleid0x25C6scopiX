@@ -63,7 +63,19 @@ def init():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             created_at REAL NOT NULL,
-            data TEXT NOT NULL);
+            data TEXT NOT NULL,
+            session_id TEXT);
+        """)
+        columns = {
+            row["name"]
+            for row in connection.execute("PRAGMA table_info(measurements)").fetchall()
+        }
+        if "session_id" not in columns:
+            connection.execute("ALTER TABLE measurements ADD COLUMN session_id TEXT")
+        connection.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_measurements_user_session
+                ON measurements(user_id, session_id)
+                WHERE session_id IS NOT NULL
         """)
         cleanup_expired_tokens(connection)
 
@@ -108,6 +120,7 @@ class MeasureReq(BaseModel):
     userID: int
     token: str
     measurements: Any
+    session_id: Optional[str] = None
 
 
 def enforce_login_rate_limit(request: Request):
@@ -173,16 +186,21 @@ def check_token(connection, token, user_id, kind):
 
 @app.post("/measurements")
 def post_measurements(r: MeasureReq):
+    session_id = r.session_id.strip() if r.session_id and r.session_id.strip() else None
     with db() as connection:
         cleanup_expired_tokens(connection)
         connection.commit()
         if not check_token(connection, r.token, r.userID, "gateway"):
             raise HTTPException(401, "invalid token")
         connection.execute("DELETE FROM tokens WHERE token=?", (r.token,))
-        connection.execute(
-            "INSERT INTO measurements(user_id,created_at,data) VALUES(?,?,?)",
-            (r.userID, time.time(), json.dumps(r.measurements)),
+        cursor = connection.execute(
+            "INSERT OR IGNORE INTO measurements(user_id,created_at,data,session_id) "
+            "VALUES(?,?,?,?)",
+            (r.userID, time.time(), json.dumps(r.measurements), session_id),
         )
+        duplicate = cursor.rowcount == 0
+    if duplicate:
+        return {"success": True, "duplicate": True}
     return {"success": True}
 
 

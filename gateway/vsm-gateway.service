@@ -1,7 +1,7 @@
 [Unit]
 Description=Vital Sign Monitor gateway
 Wants=network-online.target
-After=network-online.target
+After=network-online.target mosquitto.service
 
 [Service]
 Type=simple
@@ -14,7 +14,7 @@ Environment=PYTHONUNBUFFERED=1
 StateDirectory=vsm
 StateDirectoryMode=0700
 UMask=0077
-ExecStart=/opt/vsm/venv/bin/python /opt/vsm/gateway/gateway.py --port /dev/serial0 --baud 115200 --n 10 --loop
+ExecStart=/opt/vsm/venv/bin/python /opt/vsm/gateway/gateway.py --n 10 --loop
 Restart=on-failure
 RestartSec=5s
 NoNewPrivileges=true

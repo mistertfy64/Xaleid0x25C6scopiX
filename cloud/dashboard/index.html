@@ -123,7 +123,23 @@
       padding-bottom: 20px;
       border-bottom: 1px solid var(--line);
     }
-    .dashboard-actions { display: flex; align-items: center; gap: 8px; }
+    .dashboard-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .node-filter { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+    .node-filter select {
+      min-width: 120px;
+      height: 42px;
+      padding: 0 28px 0 10px;
+      border: 1px solid #d2dad6;
+      border-radius: 4px;
+      background: var(--surface);
+      color: #34413c;
+      font: inherit;
+      font-size: 13px;
+    }
+    .node-filter select:focus-visible {
+      outline: 3px solid rgba(23, 99, 79, .2);
+      outline-offset: 2px;
+    }
     .identity { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
     .demo-notice {
       margin: 0 0 18px;
@@ -344,6 +360,12 @@
             <p id="identity" class="identity"></p>
           </div>
           <div class="dashboard-actions">
+            <label id="node-filter-wrap" class="node-filter hidden">
+              โหนด
+              <select id="node-filter" aria-label="เลือกโหนดเซ็นเซอร์">
+                <option value="all">ทุกโหนด</option>
+              </select>
+            </label>
             <button id="refresh-button" class="button button-secondary" type="button">อัปเดตข้อมูล</button>
             <button id="logout-button" class="button button-secondary" type="button">ออกจากระบบ</button>
           </div>
@@ -440,6 +462,7 @@
               <thead>
                 <tr>
                   <th scope="col">เวลา</th>
+                  <th scope="col">โหนด</th>
                   <th scope="col">อัตราการเต้นของหัวใจ</th>
                   <th scope="col">SpO₂</th>
                   <th scope="col">อุณหภูมิร่างกาย</th>
@@ -469,6 +492,8 @@
     const emptyState = document.querySelector("#empty-state");
     const historyTableWrap = document.querySelector("#history-table-wrap");
     const historyBody = document.querySelector("#history-body");
+    const nodeFilterWrap = document.querySelector("#node-filter-wrap");
+    const nodeFilter = document.querySelector("#node-filter");
     const refreshButton = document.querySelector("#refresh-button");
     const trendMetric = document.querySelector("#trend-metric");
     const trendRange = document.querySelector("#trend-range");
@@ -496,6 +521,7 @@
     };
     let viewerSession = null;
     let refreshTimer = null;
+    let allReadings = [];
     let currentReadings = [];
 
     function setMessage(element, message, success = false) {
@@ -601,8 +627,33 @@
       row.append(cell);
     }
 
-    function renderReadings(records) {
-      const readings = flattenReadings(records);
+    function updateNodeOptions(readings) {
+      const nodeIds = [...new Set(
+        readings
+          .map((reading) => (typeof reading.node_id === "string" ? reading.node_id.trim() : ""))
+          .filter(Boolean),
+      )].sort();
+      const previous = nodeFilter.value || "all";
+      nodeFilter.replaceChildren();
+      const allOption = document.createElement("option");
+      allOption.value = "all";
+      allOption.textContent = "ทุกโหนด";
+      nodeFilter.append(allOption);
+      for (const nodeId of nodeIds) {
+        const option = document.createElement("option");
+        option.value = nodeId;
+        option.textContent = nodeId;
+        nodeFilter.append(option);
+      }
+      nodeFilter.value = nodeIds.includes(previous) ? previous : "all";
+      nodeFilterWrap.classList.toggle("hidden", nodeIds.length === 0);
+    }
+
+    function applyNodeFilterAndRender() {
+      const selectedNode = nodeFilter.value || "all";
+      const readings = selectedNode === "all"
+        ? allReadings
+        : allReadings.filter((reading) => reading.node_id === selectedNode);
       currentReadings = readings;
       const latest = readings[0];
       document.querySelector("#heart-rate").textContent = latest
@@ -626,15 +677,22 @@
       for (const reading of recent) {
         const row = document.createElement("tr");
         addCell(row, formatTime(reading.t));
+        addCell(row, reading.node_id || "—");
         addCell(row, formatValue(reading.hr, "bpm"));
         addCell(row, formatValue(reading.spo2, "%"));
         addCell(row, formatValue(reading.body_temp, "°C", 1));
         addCell(row, formatValue(reading.machine_temp, "°C", 1));
         historyBody.append(row);
       }
+      renderTrend();
+    }
+
+    function renderReadings(records) {
+      allReadings = flattenReadings(records);
+      updateNodeOptions(allReadings);
+      applyNodeFilterAndRender();
       document.querySelector("#updated-at").textContent =
         `อัปเดตแล้ว ${new Intl.DateTimeFormat("th-TH", { timeStyle: "short" }).format(new Date())}`;
-      renderTrend();
     }
 
     function createSvgElement(name, attributes = {}, text = "") {
@@ -835,6 +893,7 @@
       ];
       const now = Date.now();
       const readings = values.map((value, index) => ({
+        node_id: "node-1",
         ...value,
         t: Math.floor((now - (values.length - index - 1) * 5 * 60 * 1000) / 1000),
       }));
@@ -884,7 +943,9 @@
       if (refreshTimer) window.clearInterval(refreshTimer);
       refreshTimer = null;
       viewerSession = null;
+      allReadings = [];
       currentReadings = [];
+      updateNodeOptions([]);
       renderTrend();
       historyBody.replaceChildren();
       for (const id of ["heart-rate", "spo2", "body-temp", "machine-temp"]) {
@@ -904,6 +965,7 @@
     }
 
     refreshButton.addEventListener("click", refreshReadings);
+    nodeFilter.addEventListener("change", applyNodeFilterAndRender);
     trendMetric.addEventListener("change", renderTrend);
     trendRange.addEventListener("change", renderTrend);
     window.addEventListener("resize", renderTrend);
