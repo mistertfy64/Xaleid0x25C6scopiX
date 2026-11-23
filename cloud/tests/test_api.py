@@ -120,3 +120,43 @@ def test_expired_token_is_rejected(api):
     )
 
     assert response.status_code == 401
+
+
+def test_duplicate_session_id_is_deduplicated(api):
+    backend, client = api
+    create_user(backend)
+
+    first_creds = login(client).json()
+    first = client.post(
+        "/measurements",
+        json={
+            "userID": first_creds["userID"],
+            "token": first_creds["token"],
+            "session_id": "sess-abc-123",
+            "measurements": [{"node_id": "node-1", "hr": 72, "spo2": 98}],
+        },
+    )
+    assert first.status_code == 200
+    assert first.json() == {"success": True}
+
+    second_creds = login(client).json()
+    second = client.post(
+        "/measurements",
+        json={
+            "userID": second_creds["userID"],
+            "token": second_creds["token"],
+            "session_id": "sess-abc-123",
+            "measurements": [{"node_id": "node-1", "hr": 72, "spo2": 98}],
+        },
+    )
+    assert second.status_code == 200
+    assert second.json() == {"success": True, "duplicate": True}
+
+    viewer = login(client, kind="viewer").json()
+    fetched = client.get(
+        "/measurements",
+        params={"userID": viewer["userID"]},
+        headers={"Authorization": f"Bearer {viewer['token']}"},
+    )
+    assert fetched.status_code == 200
+    assert len(fetched.json()["measurements"]) == 1
