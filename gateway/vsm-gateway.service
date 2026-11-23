@@ -1,0 +1,27 @@
+[Unit]
+Description=Vital Sign Monitor gateway
+Wants=network-online.target
+After=network-online.target mosquitto.service
+
+[Service]
+Type=simple
+User=vsm
+Group=vsm
+SupplementaryGroups=dialout i2c
+WorkingDirectory=/opt/vsm/gateway
+EnvironmentFile=/etc/vsm/gateway.env
+Environment=PYTHONUNBUFFERED=1
+StateDirectory=vsm
+StateDirectoryMode=0700
+UMask=0077
+ExecStart=/opt/vsm/venv/bin/python /opt/vsm/gateway/gateway.py --n 10 --loop
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/vsm
+
+[Install]
+WantedBy=multi-user.target

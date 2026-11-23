@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ระบบติดตามสัญญาณชีพ</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Leelawadee UI", Tahoma, "Segoe UI", sans-serif;
+      background: #f7f8f7;
+      color: #202824;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --muted: #66716c;
+      --line: #e0e5e2;
+      --accent: #17634f;
+      --surface: #fff;
+      --surface-subtle: #f7f9f8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      background: #f7f8f7;
+    }
+
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid rgba(23, 99, 79, .2);
+      outline-offset: 2px;
+    }
+
+    .shell { width: min(1080px, calc(100% - 40px)); margin: 0 auto; }
+
+    .topbar {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #b8cbc3;
+      border-radius: 5px;
+      color: var(--accent);
+      background: var(--surface);
+    }
+    .brand-mark svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: square; stroke-linejoin: miter; stroke-width: 1.7; }
+    .brand-title { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: .03em; }
+    .brand-subtitle { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .secure-label { color: var(--muted); font-size: 12px; }
+
+    main { padding: 38px 0 56px; }
+    h1 { margin: 0; font-size: 25px; line-height: 1.4; font-weight: 700; letter-spacing: -.01em; }
+    .eyebrow { margin: 0 0 5px; color: var(--muted); font-size: 11px; }
+    .intro { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+
+    .login-view { width: min(100%, 430px); margin: 52px auto 0; }
+    .login-heading { margin-bottom: 22px; }
+
+    .login-card {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+    }
+    .field { display: grid; gap: 6px; margin-top: 15px; }
+    .field label { color: #34413c; font-size: 13px; font-weight: 600; }
+    .field input {
+      width: 100%;
+      height: 44px;
+      padding: 0 12px;
+      border: 1px solid #cfd7d3;
+      border-radius: 4px;
+      background: var(--surface);
+    }
+    .field input:focus { border-color: var(--accent); }
+    .hint { margin: 12px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+    .button {
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      color: #fff;
+      background: var(--accent);
+      font-size: 14px;
+      font-weight: 600;
+      transition: background-color .15s ease;
+    }
+    .button:hover { background: #125440; }
+    .button:disabled { cursor: wait; opacity: .65; }
+    .button-secondary {
+      border-color: #d2dad6;
+      color: #34413c;
+      background: var(--surface);
+    }
+    .button-secondary:hover { background: var(--surface-subtle); }
+    .login-card .button { width: 100%; margin-top: 20px; }
+    .message { min-height: 18px; margin: 11px 0 0; color: #a13e31; font-size: 13px; line-height: 1.5; }
+    .message.success { color: var(--accent); }
+    .login-footnote { margin: 14px 0 0; color: var(--muted); text-align: center; font-size: 12px; }
+
+    .dashboard-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .dashboard-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .node-filter { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+    .node-filter select {
+      min-width: 120px;
+      height: 42px;
+      padding: 0 28px 0 10px;
+      border: 1px solid #d2dad6;
+      border-radius: 4px;
+      background: var(--surface);
+      color: #34413c;
+      font: inherit;
+      font-size: 13px;
+    }
+    .node-filter select:focus-visible {
+      outline: 3px solid rgba(23, 99, 79, .2);
+      outline-offset: 2px;
+    }
+    .identity { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .demo-notice {
+      margin: 0 0 18px;
+      padding: 11px 14px;
+      border: 1px solid #e8d9a8;
+      border-radius: 4px;
+      color: #59491e;
+      background: #fff9e8;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .metric-card {
+      min-width: 0;
+      min-height: 116px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+    }
+    .metric-label { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .metric-value { margin: 15px 0 0; color: #202824; font-size: clamp(23px, 2.5vw, 29px); line-height: 1.3; font-weight: 650; letter-spacing: -.01em; }
+    .metric-unit { color: var(--muted); font-size: 12px; font-weight: 500; letter-spacing: 0; }
+    .trend-card {
+      margin-top: 24px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: linear-gradient(145deg, #fff 58%, #fbfdfc);
+      box-shadow: 0 5px 20px rgba(32, 54, 45, .035);
+      color: #202824;
+    }
+    .trend-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .trend-head h2 { margin: 0; color: #202824; font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+    .trend-head p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .trend-controls { display: flex; gap: 10px; }
+    .trend-controls label { display: grid; gap: 4px; color: var(--muted); font-size: 11px; }
+    .trend-controls select {
+      min-width: 130px;
+      height: 36px;
+      padding: 0 28px 0 10px;
+      border: 1px solid #cfd7d3;
+      border-radius: 6px;
+      background: var(--surface);
+      color: #34413c;
+      font: inherit;
+      font-size: 12px;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .trend-controls select:focus-visible {
+      outline: 0;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(23, 99, 79, .12);
+    }
+    .trend-summary {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 9px;
+      width: fit-content;
+      max-width: 100%;
+      margin-top: 16px;
+      padding: 7px 11px;
+      border: 1px solid #e8efeb;
+      border-radius: 999px;
+      background: #f7faf8;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .trend-count { color: #42534b; font-weight: 600; }
+    .trend-summary-divider { width: 3px; height: 3px; border-radius: 50%; background: #aab8b1; }
+    .trend-latest-label, .trend-latest-time { color: var(--muted); }
+    .trend-summary strong { color: #9a6a0a; font-size: 12px; font-weight: 700; }
+    .chart-wrap { position: relative; margin-top: 10px; }
+    .trend-chart { display: block; width: 100%; height: auto; overflow: visible; }
+    .chart-grid line { stroke: #e9eeeb; stroke-width: 1; }
+    .chart-grid .chart-plot-background { fill: #fbfdfc; stroke: #edf2ef; }
+    .chart-grid .chart-vertical { stroke: #e9eeeb; stroke-dasharray: 3 5; }
+    .chart-grid text { fill: #77847e; font: 11px "Leelawadee UI", Tahoma, sans-serif; }
+    .trend-area { fill: url(#trend-area-fill); }
+    .trend-line { fill: none; stroke: #176f58; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5; }
+    .trend-point { fill: #fff; stroke: #176f58; stroke-width: 2; cursor: crosshair; }
+    .trend-point.is-latest { fill: #e3ae3d; stroke: #fff; stroke-width: 3; filter: drop-shadow(0 1px 3px rgba(32, 54, 45, .2)); }
+    .trend-tooltip {
+      position: absolute;
+      z-index: 1;
+      display: grid;
+      gap: 5px;
+      min-width: 118px;
+      padding: 10px 12px;
+      border: 1px solid #dfe7e2;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(32, 54, 45, .16);
+      color: #34413c;
+      font-size: 11px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -100%);
+      transition: opacity .12s ease, visibility .12s ease;
+      visibility: hidden;
+    }
+    .trend-tooltip.is-visible { opacity: 1; visibility: visible; }
+    .trend-tooltip-date { color: var(--muted); }
+    .trend-tooltip strong { color: #9a6a0a; font-size: 18px; line-height: 1.2; }
+    .history-card {
+      margin-top: 24px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+    }
+    .history-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .history-head h2 { margin: 0; font-size: 14px; font-weight: 650; }
+    .updated { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+    th, td { padding: 12px 16px; border-bottom: 1px solid #edf0ee; }
+    th { color: var(--muted); background: var(--surface-subtle); font-size: 12px; font-weight: 600; }
+    td { color: #34413c; font-size: 13px; }
+    tbody tr:hover { background: #fafbfa; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .empty-state { padding: 30px 16px; color: var(--muted); text-align: center; font-size: 12px; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 800px) {
+      .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 480px) {
+      .shell { width: calc(100% - 32px); }
+      main { padding-top: 26px; }
+      .topbar { min-height: 60px; }
+      .secure-label { font-size: 10px; }
+      .login-view { margin-top: 34px; }
+      .login-card { padding: 20px; }
+      .dashboard-head { align-items: flex-start; flex-direction: column; }
+      .dashboard-actions { width: 100%; }
+      .dashboard-actions .button { flex: 1; }
+      .metric-grid { gap: 8px; }
+      .metric-card { min-height: 108px; padding: 13px; }
+      .metric-value { margin-top: 12px; font-size: 23px; }
+      .trend-card { padding: 14px; border-radius: 8px; }
+      .trend-head { align-items: flex-start; flex-direction: column; gap: 12px; }
+      .trend-controls { width: 100%; }
+      .trend-controls label { flex: 1; min-width: 0; }
+      .trend-controls select { width: 100%; min-width: 0; }
+      .trend-summary { gap: 7px; padding: 7px 9px; }
+      .history-head { align-items: flex-start; flex-direction: column; }
+      th, td { padding: 11px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header id="site-header" class="topbar hidden">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M2 12h5l3-7 4 14 3-7h5"/></svg>
+        </div>
+        <div>
+          <p class="brand-title">Vital Sign Monitor</p>
+          <p class="brand-subtitle">ระบบติดตามสัญญาณชีพทางไกล</p>
+        </div>
+      </div>
+      <span class="secure-label">เชื่อมต่ออย่างปลอดภัย · HTTPS</span>
+    </header>
+
+    <main>
+      <section id="login-view" class="login-view">
+        <div class="login-heading">
+          <p class="eyebrow">Vital Sign Monitor</p>
+          <h1>เข้าสู่ระบบ</h1>
+          <p class="intro">ลงชื่อเข้าใช้เพื่อดูผลการวัดและประวัติสุขภาพ</p>
+        </div>
+
+        <form id="login-form" class="login-card">
+          <div class="field">
+            <label for="api-url">ที่อยู่ Cloud API</label>
+            <input id="api-url" name="api-url" type="url" placeholder="https://127.0.0.1:8443" autocomplete="url" required>
+          </div>
+          <div class="field">
+            <label for="username">ชื่อผู้ใช้</label>
+            <input id="username" name="username" type="text" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="password">รหัสผ่าน</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <p class="hint">ที่อยู่ API ต้องขึ้นต้นด้วย https://</p>
+          <button id="login-button" class="button" type="submit">เข้าสู่ระบบ</button>
+          <p id="login-message" class="message" role="status" aria-live="polite"></p>
+        </form>
+        <p class="login-footnote">โทเค็นจะถูกล้างเมื่อออกจากระบบหรือปิดหน้านี้</p>
+      </section>
+
+      <section id="dashboard-view" class="hidden">
+        <div class="dashboard-head">
+          <div>
+            <p class="eyebrow">ภาพรวม</p>
+            <h1>ข้อมูลสุขภาพ</h1>
+            <p id="identity" class="identity"></p>
+          </div>
+          <div class="dashboard-actions">
+            <label id="node-filter-wrap" class="node-filter hidden">
+              โหนด
+              <select id="node-filter" aria-label="เลือกโหนดเซ็นเซอร์">
+                <option value="all">ทุกโหนด</option>
+              </select>
+            </label>
+            <button id="refresh-button" class="button button-secondary" type="button">อัปเดตข้อมูล</button>
+            <button id="logout-button" class="button button-secondary" type="button">ออกจากระบบ</button>
+          </div>
+        </div>
+
+        <p id="demo-notice" class="demo-notice hidden" role="status">
+          ข้อมูลจำลองสำหรับทดสอบ UI เท่านั้น ไม่ใช่ข้อมูลจริง
+        </p>
+
+        <div class="metric-grid" aria-label="ค่าสัญญาณชีพล่าสุด">
+          <article class="metric-card">
+            <p class="metric-label">ชีพจร</p>
+            <p id="heart-rate" class="metric-value">—</p>
+          </article>
+          <article class="metric-card">
+            <p class="metric-label">ออกซิเจนในเลือด · SpO₂</p>
+            <p id="spo2" class="metric-value">—</p>
+          </article>
+          <article class="metric-card">
+            <p class="metric-label">อุณหภูมิร่างกาย</p>
+            <p id="body-temp" class="metric-value">—</p>
+          </article>
+          <article class="metric-card">
+            <p class="metric-label">อุณหภูมิเครื่อง</p>
+            <p id="machine-temp" class="metric-value">—</p>
+          </article>
+        </div>
+
+        <section class="trend-card" aria-labelledby="trend-heading">
+          <div class="trend-head">
+            <div>
+              <h2 id="trend-heading">แนวโน้มตามเวลา</h2>
+              <p>แสดงข้อมูลทีละตัวชี้วัด</p>
+            </div>
+            <div class="trend-controls">
+              <label>
+                ตัวชี้วัด
+                <select id="trend-metric">
+                  <option value="hr">ชีพจร</option>
+                  <option value="spo2">SpO₂</option>
+                  <option value="body_temp">อุณหภูมิร่างกาย</option>
+                  <option value="machine_temp">อุณหภูมิเครื่อง</option>
+                </select>
+              </label>
+              <label>
+                ช่วงเวลา
+                <select id="trend-range">
+                  <option value="1">1 ชั่วโมง</option>
+                  <option value="6">6 ชั่วโมง</option>
+                  <option value="24">24 ชั่วโมง</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div id="trend-summary" class="trend-summary hidden" role="status" aria-live="polite">
+            <span id="trend-count" class="trend-count"></span>
+            <span class="trend-summary-divider" aria-hidden="true"></span>
+            <span class="trend-latest-label">ค่าล่าสุด</span>
+            <strong id="trend-latest"></strong>
+            <span id="trend-latest-time" class="trend-latest-time"></span>
+          </div>
+          <div class="chart-wrap">
+            <svg id="trend-chart" class="trend-chart" viewBox="0 0 760 250" role="img"
+              aria-labelledby="trend-chart-title trend-chart-description">
+              <title id="trend-chart-title">กราฟแนวโน้มข้อมูล</title>
+              <desc id="trend-chart-description"></desc>
+              <defs>
+                <linearGradient id="trend-area-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#2a9d77" stop-opacity=".16"></stop>
+                  <stop offset="100%" stop-color="#2a9d77" stop-opacity="0"></stop>
+                </linearGradient>
+              </defs>
+              <g id="chart-grid" class="chart-grid"></g>
+              <path id="trend-area" class="trend-area"></path>
+              <path id="trend-line" class="trend-line"></path>
+              <g id="trend-points"></g>
+            </svg>
+            <div id="trend-tooltip" class="trend-tooltip" aria-hidden="true">
+              <span id="trend-tooltip-date" class="trend-tooltip-date"></span>
+              <strong id="trend-tooltip-value"></strong>
+            </div>
+            <p id="trend-empty" class="empty-state hidden">ไม่มีข้อมูลในช่วงเวลาที่เลือก</p>
+          </div>
+        </section>
+
+        <section class="history-card" aria-labelledby="history-title">
+          <div class="history-head">
+            <h2 id="history-title">ประวัติการวัด</h2>
+            <span id="updated-at" class="updated">ยังไม่มีการอัปเดต</span>
+          </div>
+          <div id="empty-state" class="empty-state">กำลังโหลดข้อมูล…</div>
+          <div id="history-table-wrap" class="table-wrap hidden">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">เวลา</th>
+                  <th scope="col">โหนด</th>
+                  <th scope="col">อัตราการเต้นของหัวใจ</th>
+                  <th scope="col">SpO₂</th>
+                  <th scope="col">อุณหภูมิร่างกาย</th>
+                  <th scope="col">อุณหภูมิเครื่อง</th>
+                </tr>
+              </thead>
+              <tbody id="history-body"></tbody>
+            </table>
+          </div>
+        </section>
+        <p id="dashboard-message" class="message" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const siteHeader = document.querySelector("#site-header");
+    const secureLabel = document.querySelector(".secure-label");
+    const loginView = document.querySelector("#login-view");
+    const dashboardView = document.querySelector("#dashboard-view");
+    const dashboardActions = document.querySelector(".dashboard-actions");
+    const demoNotice = document.querySelector("#demo-notice");
+    const loginForm = document.querySelector("#login-form");
+    const loginButton = document.querySelector("#login-button");
+    const loginMessage = document.querySelector("#login-message");
+    const dashboardMessage = document.querySelector("#dashboard-message");
+    const emptyState = document.querySelector("#empty-state");
+    const historyTableWrap = document.querySelector("#history-table-wrap");
+    const historyBody = document.querySelector("#history-body");
+    const nodeFilterWrap = document.querySelector("#node-filter-wrap");
+    const nodeFilter = document.querySelector("#node-filter");
+    const refreshButton = document.querySelector("#refresh-button");
+    const trendMetric = document.querySelector("#trend-metric");
+    const trendRange = document.querySelector("#trend-range");
+    const trendChart = document.querySelector("#trend-chart");
+    const chartWrap = document.querySelector(".chart-wrap");
+    const chartGrid = document.querySelector("#chart-grid");
+    const trendArea = document.querySelector("#trend-area");
+    const trendLine = document.querySelector("#trend-line");
+    const trendPoints = document.querySelector("#trend-points");
+    const trendEmpty = document.querySelector("#trend-empty");
+    const trendSummary = document.querySelector("#trend-summary");
+    const trendCount = document.querySelector("#trend-count");
+    const trendLatest = document.querySelector("#trend-latest");
+    const trendLatestTime = document.querySelector("#trend-latest-time");
+    const trendTooltip = document.querySelector("#trend-tooltip");
+    const trendTooltipDate = document.querySelector("#trend-tooltip-date");
+    const trendTooltipValue = document.querySelector("#trend-tooltip-value");
+    const trendChartTitle = document.querySelector("#trend-chart-title");
+    const trendChartDescription = document.querySelector("#trend-chart-description");
+    const trendMetrics = {
+      hr: { label: "ชีพจร", unit: "bpm", digits: 0 },
+      spo2: { label: "SpO₂", unit: "%", digits: 0 },
+      body_temp: { label: "อุณหภูมิร่างกาย", unit: "°C", digits: 1 },
+      machine_temp: { label: "อุณหภูมิเครื่อง", unit: "°C", digits: 1 },
+    };
+    let viewerSession = null;
+    let refreshTimer = null;
+    let allReadings = [];
+    let currentReadings = [];
+
+    function setMessage(element, message, success = false) {
+      element.textContent = message;
+      element.classList.toggle("success", success);
+    }
+
+    function getApiUrl() {
+      const url = new URL(document.querySelector("#api-url").value.trim());
+      if (url.protocol !== "https:" || !url.hostname || url.username || url.password) {
+        throw new Error("กรุณากรอก URL ของ API ที่ถูกต้องและใช้ HTTPS โดยไม่ฝังข้อมูลรับรองไว้ใน URL");
+      }
+      return url.href.replace(/\/+$/, "");
+    }
+
+    async function readJson(response) {
+      try {
+        return await response.json();
+      } catch {
+        return {};
+      }
+    }
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setMessage(loginMessage, "");
+      loginButton.disabled = true;
+      try {
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: document.querySelector("#username").value,
+            password: document.querySelector("#password").value,
+            client: "viewer",
+          }),
+        });
+        const result = await readJson(response);
+        if (response.status === 429) {
+          throw new Error("พยายามเข้าสู่ระบบมากเกินไป กรุณารอหนึ่งนาทีแล้วลองอีกครั้ง");
+        }
+        if (!response.ok || !result.success) {
+          throw new Error("เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบ URL และบัญชีผู้ดูแล");
+        }
+        viewerSession = { apiUrl, token: result.token, userID: result.userID };
+        document.querySelector("#password").value = "";
+        document.querySelector("#identity").textContent = `บัญชีผู้ดูแล · ผู้ใช้ ${result.userID}`;
+        loginView.classList.add("hidden");
+        siteHeader.classList.remove("hidden");
+        dashboardView.classList.remove("hidden");
+        await refreshReadings();
+        if (viewerSession) {
+          refreshTimer = window.setInterval(refreshReadings, 30000);
+        }
+      } catch (error) {
+        setMessage(loginMessage, error instanceof TypeError
+          ? "เชื่อมต่อไม่ได้ กรุณาตรวจสอบ URL แบบ HTTPS เครือข่าย และการตั้งค่า CORS"
+          : error.message);
+      } finally {
+        loginButton.disabled = false;
+      }
+    });
+
+    function formatValue(value, unit, digits = 0) {
+      if (value === null || value === undefined || value === "" || !Number.isFinite(Number(value))) {
+        return "—";
+      }
+      const formatted = Number(value).toFixed(digits);
+      return unit === "%" ? `${formatted}%` : `${formatted} ${unit}`;
+    }
+
+    function toMilliseconds(value) {
+      const numeric = Number(value);
+      if (Number.isFinite(numeric)) {
+        return numeric < 1e12 ? numeric * 1000 : numeric;
+      }
+      const parsed = Date.parse(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function formatTime(value) {
+      const milliseconds = toMilliseconds(value);
+      if (!milliseconds) return "—";
+      return new Intl.DateTimeFormat("th-TH", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(milliseconds));
+    }
+
+    function flattenReadings(records) {
+      return records.flatMap((record) => {
+        const items = Array.isArray(record.data) ? record.data : [record.data];
+        return items
+          .filter((item) => item && typeof item === "object")
+          .map((item) => ({ ...item, t: item.t ?? record.timestamp }));
+      }).sort((left, right) => toMilliseconds(right.t) - toMilliseconds(left.t));
+    }
+
+    function addCell(row, value) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    }
+
+    function updateNodeOptions(readings) {
+      const nodeIds = [...new Set(
+        readings
+          .map((reading) => (typeof reading.node_id === "string" ? reading.node_id.trim() : ""))
+          .filter(Boolean),
+      )].sort();
+      const previous = nodeFilter.value || "all";
+      nodeFilter.replaceChildren();
+      const allOption = document.createElement("option");
+      allOption.value = "all";
+      allOption.textContent = "ทุกโหนด";
+      nodeFilter.append(allOption);
+      for (const nodeId of nodeIds) {
+        const option = document.createElement("option");
+        option.value = nodeId;
+        option.textContent = nodeId;
+        nodeFilter.append(option);
+      }
+      nodeFilter.value = nodeIds.includes(previous) ? previous : "all";
+      nodeFilterWrap.classList.toggle("hidden", nodeIds.length === 0);
+    }
+
+    function applyNodeFilterAndRender() {
+      const selectedNode = nodeFilter.value || "all";
+      const readings = selectedNode === "all"
+        ? allReadings
+        : allReadings.filter((reading) => reading.node_id === selectedNode);
+      currentReadings = readings;
+      const latest = readings[0];
+      document.querySelector("#heart-rate").textContent = latest
+        ? formatValue(latest.hr, "bpm")
+        : "—";
+      document.querySelector("#spo2").textContent = latest
+        ? formatValue(latest.spo2, "%")
+        : "—";
+      document.querySelector("#body-temp").textContent = latest
+        ? formatValue(latest.body_temp, "°C", 1)
+        : "—";
+      document.querySelector("#machine-temp").textContent = latest
+        ? formatValue(latest.machine_temp, "°C", 1)
+        : "—";
+
+      historyBody.replaceChildren();
+      const recent = readings.slice(0, 12);
+      historyTableWrap.classList.toggle("hidden", recent.length === 0);
+      emptyState.classList.toggle("hidden", recent.length > 0);
+      emptyState.textContent = recent.length ? "" : "ยังไม่มีข้อมูลการวัด";
+      for (const reading of recent) {
+        const row = document.createElement("tr");
+        addCell(row, formatTime(reading.t));
+        addCell(row, reading.node_id || "—");
+        addCell(row, formatValue(reading.hr, "bpm"));
+        addCell(row, formatValue(reading.spo2, "%"));
+        addCell(row, formatValue(reading.body_temp, "°C", 1));
+        addCell(row, formatValue(reading.machine_temp, "°C", 1));
+        historyBody.append(row);
+      }
+      renderTrend();
+    }
+
+    function renderReadings(records) {
+      allReadings = flattenReadings(records);
+      updateNodeOptions(allReadings);
+      applyNodeFilterAndRender();
+      document.querySelector("#updated-at").textContent =
+        `อัปเดตแล้ว ${new Intl.DateTimeFormat("th-TH", { timeStyle: "short" }).format(new Date())}`;
+    }
+
+    function createSvgElement(name, attributes = {}, text = "") {
+      const element = document.createElementNS("http://www.w3.org/2000/svg", name);
+      for (const [key, value] of Object.entries(attributes)) {
+        element.setAttribute(key, String(value));
+      }
+      element.textContent = text;
+      return element;
+    }
+
+    function hideTrendTooltip() {
+      trendTooltip.classList.remove("is-visible");
+      trendTooltip.setAttribute("aria-hidden", "true");
+    }
+
+    function showTrendTooltip(reading, point, metric) {
+      trendTooltipDate.textContent = formatTime(reading.time);
+      trendTooltipValue.textContent = formatValue(reading.value, metric.unit, metric.digits);
+      trendTooltip.classList.add("is-visible");
+      trendTooltip.setAttribute("aria-hidden", "false");
+
+      const wrapper = chartWrap.getBoundingClientRect();
+      const marker = point.getBoundingClientRect();
+      const tooltipWidth = trendTooltip.offsetWidth;
+      const tooltipHeight = trendTooltip.offsetHeight;
+      const markerX = marker.left + marker.width / 2 - wrapper.left;
+      const markerY = marker.top + marker.height / 2 - wrapper.top;
+      const x = Math.min(wrapper.width - tooltipWidth / 2 - 8,
+        Math.max(tooltipWidth / 2 + 8, markerX));
+      trendTooltip.style.left = `${x}px`;
+      trendTooltip.style.top = `${Math.max(tooltipHeight + 8, markerY - 10)}px`;
+    }
+
+    function renderTrend() {
+      const metricKey = trendMetrics[trendMetric.value] ? trendMetric.value : "hr";
+      const metric = trendMetrics[metricKey];
+      const hours = Number(trendRange.value) || 1;
+      const end = Date.now();
+      const start = end - hours * 60 * 60 * 1000;
+      const readings = currentReadings
+        .map((reading) => ({
+          time: toMilliseconds(reading.t),
+          value: reading[metricKey] === null || reading[metricKey] === undefined
+            || reading[metricKey] === "" ? NaN : Number(reading[metricKey]),
+        }))
+        .filter((reading) => reading.time >= start && reading.time <= end
+          && Number.isFinite(reading.value))
+        .sort((left, right) => left.time - right.time);
+
+      trendChartTitle.textContent = `${metric.label} ในช่วง ${hours} ชั่วโมงล่าสุด`;
+      trendChartDescription.textContent = `กราฟแสดง ${readings.length} จุดข้อมูล หน่วย ${metric.unit}`;
+      chartGrid.replaceChildren();
+      trendPoints.replaceChildren();
+      hideTrendTooltip();
+      trendArea.setAttribute("d", "");
+      trendLine.setAttribute("d", "");
+      trendChart.classList.toggle("hidden", readings.length === 0);
+      trendEmpty.classList.toggle("hidden", readings.length > 0);
+      trendSummary.classList.toggle("hidden", readings.length === 0);
+      if (readings.length === 0) {
+        trendCount.textContent = "";
+        trendLatest.textContent = "";
+        trendLatestTime.textContent = "";
+        return;
+      }
+
+      const width = Math.max(320, Math.round(chartWrap.clientWidth));
+      const height = 250;
+      const margin = { top: 14, right: 68, bottom: 32, left: 14 };
+      const plotWidth = width - margin.left - margin.right;
+      const plotHeight = height - margin.top - margin.bottom;
+      trendChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      const firstTime = readings[0].time;
+      const lastTime = readings[readings.length - 1].time;
+      const timePadding = firstTime === lastTime ? 30 * 60 * 1000 : 0;
+      const chartStart = firstTime - timePadding;
+      const chartEnd = lastTime + timePadding;
+
+      const values = readings.map((reading) => reading.value);
+      const minimum = Math.min(...values);
+      const maximum = Math.max(...values);
+      const spread = maximum - minimum || (metric.digits === 0 ? 4 : 0.4);
+      const padding = spread * 0.15;
+      const rawStep = (spread + padding * 2) / 4;
+      const magnitude = 10 ** Math.floor(Math.log10(rawStep));
+      const normalizedStep = rawStep / magnitude;
+      const step = (normalizedStep <= 1 ? 1
+        : normalizedStep <= 2 ? 2
+          : normalizedStep <= 5 ? 5 : 10) * magnitude;
+      const yMinimum = Math.floor((minimum - padding) / step) * step;
+      const yMaximum = Math.ceil((maximum + padding) / step) * step;
+      const tickCount = Math.max(1, Math.round((yMaximum - yMinimum) / step));
+      const yAt = (value) => margin.top
+        + ((yMaximum - value) / (yMaximum - yMinimum)) * plotHeight;
+      const xAt = (time) => margin.left
+        + ((time - chartStart) / (chartEnd - chartStart)) * plotWidth;
+
+      chartGrid.append(createSvgElement("rect", {
+        x: margin.left,
+        y: margin.top,
+        width: plotWidth,
+        height: plotHeight,
+        rx: 7,
+        class: "chart-plot-background",
+      }));
+      for (let index = 0; index <= tickCount; index += 1) {
+        const value = yMinimum + step * index;
+        const y = yAt(value);
+        chartGrid.append(
+          createSvgElement("line", {
+            x1: margin.left, y1: y, x2: width - margin.right, y2: y,
+          }),
+          createSvgElement("text", {
+            x: width - margin.right + 10, y: y + 4, "text-anchor": "start",
+          }, Number(value.toFixed(metric.digits)).toString()),
+        );
+      }
+
+      const timeFormatter = new Intl.DateTimeFormat("th-TH", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      for (const fraction of [0, 0.5, 1]) {
+        const time = chartStart + (chartEnd - chartStart) * fraction;
+        const anchor = fraction === 0 ? "start" : fraction === 1 ? "end" : "middle";
+        const x = margin.left + plotWidth * fraction;
+        chartGrid.append(
+          createSvgElement("line", {
+            x1: x, y1: margin.top, x2: x, y2: height - margin.bottom,
+            class: "chart-vertical",
+          }),
+          createSvgElement("text", {
+            x, y: height - 8, "text-anchor": anchor,
+          }, timeFormatter.format(new Date(time))),
+        );
+      }
+
+      const coordinates = readings.map((reading) => ({
+        x: xAt(reading.time),
+        y: yAt(reading.value),
+      }));
+      const path = coordinates.map((point, index) => {
+        const command = index === 0 ? "M" : "L";
+        return `${command}${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+      }).join(" ");
+      trendLine.setAttribute("d", path);
+      if (coordinates.length > 1) {
+        const baseline = height - margin.bottom;
+        trendArea.setAttribute("d", `M${coordinates[0].x.toFixed(1)},${baseline} ${
+          coordinates.map((point) => `L${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ")
+        } L${coordinates[coordinates.length - 1].x.toFixed(1)},${baseline} Z`);
+      }
+      for (const [index, reading] of readings.entries()) {
+        const point = createSvgElement("circle", {
+          cx: xAt(reading.time),
+          cy: yAt(reading.value),
+          r: index === readings.length - 1 ? 5 : 3.5,
+          class: index === readings.length - 1 ? "trend-point is-latest" : "trend-point",
+          tabindex: 0,
+          "aria-label": `${formatTime(reading.time)} · ${
+            formatValue(reading.value, metric.unit, metric.digits)
+          }`,
+        });
+        point.append(createSvgElement("title", {}, `${formatTime(reading.time)} · ${
+          formatValue(reading.value, metric.unit, metric.digits)
+        }`));
+        point.addEventListener("pointerenter", () => showTrendTooltip(reading, point, metric));
+        point.addEventListener("pointerleave", hideTrendTooltip);
+        point.addEventListener("focus", () => showTrendTooltip(reading, point, metric));
+        point.addEventListener("blur", hideTrendTooltip);
+        trendPoints.append(point);
+      }
+
+      const latest = readings[readings.length - 1];
+      trendCount.textContent = `${readings.length} จุด`;
+      trendLatest.textContent = formatValue(latest.value, metric.unit, metric.digits);
+      trendLatestTime.textContent = timeFormatter.format(new Date(latest.time));
+      trendSummary.setAttribute("aria-label", `${readings.length} จุดข้อมูล ค่าล่าสุด ${
+        formatValue(latest.value, metric.unit, metric.digits)
+      } เวลา ${formatTime(latest.time)}`);
+    }
+
+    function showDemoDashboard() {
+      const values = [
+        { hr: 71, spo2: 97, body_temp: 36.5, machine_temp: 30.1 },
+        { hr: 73, spo2: 98, body_temp: 36.6, machine_temp: 30.4 },
+        { hr: 72, spo2: 97, body_temp: 36.6, machine_temp: 30.7 },
+        { hr: 75, spo2: 98, body_temp: 36.7, machine_temp: 30.5 },
+        { hr: 74, spo2: 99, body_temp: 36.7, machine_temp: 30.8 },
+        { hr: 72, spo2: 98, body_temp: 36.6, machine_temp: 31.0 },
+        { hr: 76, spo2: 97, body_temp: 36.8, machine_temp: 31.2 },
+        { hr: 74, spo2: 98, body_temp: 36.7, machine_temp: 31.0 },
+        { hr: 73, spo2: 97, body_temp: 36.6, machine_temp: 31.4 },
+        { hr: 75, spo2: 98, body_temp: 36.8, machine_temp: 31.6 },
+        { hr: 72, spo2: 99, body_temp: 36.7, machine_temp: 31.3 },
+        { hr: 74, spo2: 98, body_temp: 36.7, machine_temp: 31.8 },
+      ];
+      const now = Date.now();
+      const readings = values.map((value, index) => ({
+        node_id: "node-1",
+        ...value,
+        t: Math.floor((now - (values.length - index - 1) * 5 * 60 * 1000) / 1000),
+      }));
+
+      loginView.classList.add("hidden");
+      siteHeader.classList.remove("hidden");
+      dashboardView.classList.remove("hidden");
+      dashboardActions.classList.add("hidden");
+      demoNotice.classList.remove("hidden");
+      secureLabel.textContent = "โหมดตัวอย่าง · ไม่เชื่อมต่อ Cloud";
+      document.querySelector("#identity").textContent = "ข้อมูลจำลอง · ไม่ใช่ข้อมูลจริง";
+      renderReadings([{ timestamp: now / 1000, data: readings }]);
+    }
+
+    async function refreshReadings() {
+      if (!viewerSession) return;
+      refreshButton.disabled = true;
+      setMessage(dashboardMessage, "");
+      try {
+        const query = new URLSearchParams({
+          userID: String(viewerSession.userID),
+          limit: "100",
+        });
+        const response = await fetch(
+          `${viewerSession.apiUrl}/measurements?${query}`,
+          { headers: { Authorization: `Bearer ${viewerSession.token}` } },
+        );
+        const result = await readJson(response);
+        if (response.status === 401) {
+          signOut("เซสชันผู้ดูแลหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง");
+          return;
+        }
+        if (!response.ok || !result.success) {
+          throw new Error("โหลดข้อมูลไม่สำเร็จ กรุณากดรีเฟรชเพื่อลองอีกครั้ง");
+        }
+        renderReadings(Array.isArray(result.measurements) ? result.measurements : []);
+      } catch (error) {
+        setMessage(dashboardMessage, error instanceof TypeError
+          ? "เชื่อมต่อไม่สำเร็จ กรุณาตรวจสอบ API ใบรับรอง HTTPS และ origin ในการตั้งค่า CORS"
+          : error.message);
+      } finally {
+        refreshButton.disabled = false;
+      }
+    }
+
+    function signOut(message = "") {
+      if (refreshTimer) window.clearInterval(refreshTimer);
+      refreshTimer = null;
+      viewerSession = null;
+      allReadings = [];
+      currentReadings = [];
+      updateNodeOptions([]);
+      renderTrend();
+      historyBody.replaceChildren();
+      for (const id of ["heart-rate", "spo2", "body-temp", "machine-temp"]) {
+        document.querySelector(`#${id}`).textContent = "—";
+      }
+      historyTableWrap.classList.add("hidden");
+      emptyState.classList.remove("hidden");
+      emptyState.textContent = "ยังไม่มีข้อมูลการวัด";
+      document.querySelector("#updated-at").textContent = "ยังไม่มีการอัปเดต";
+      setMessage(dashboardMessage, "");
+      dashboardView.classList.add("hidden");
+      siteHeader.classList.add("hidden");
+      dashboardActions.classList.remove("hidden");
+      demoNotice.classList.add("hidden");
+      loginView.classList.remove("hidden");
+      setMessage(loginMessage, message);
+    }
+
+    refreshButton.addEventListener("click", refreshReadings);
+    nodeFilter.addEventListener("change", applyNodeFilterAndRender);
+    trendMetric.addEventListener("change", renderTrend);
+    trendRange.addEventListener("change", renderTrend);
+    window.addEventListener("resize", renderTrend);
+    document.querySelector("#logout-button").addEventListener("click", () => signOut());
+
+    const isLocalDemo = new URLSearchParams(location.search).get("demo") === "1"
+      && ["localhost", "127.0.0.1"].includes(location.hostname);
+    if (isLocalDemo) showDemoDashboard();
+  </script>
+</body>
+</html>
