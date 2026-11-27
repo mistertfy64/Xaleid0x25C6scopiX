@@ -22,6 +22,6 @@ Add the following features:
 - With the display: Display sensor data and health data in a way that it can fit. Note that not everything does have to fit, although it should show the most important information in a reasonable way.
 
 ## Examples for references
-The current payload format sent is in the `sensor/node/node.ino file`, in the `publishReading()` file.
+The current payload format sent is in the `sensor/node/node.ino file`, in the `publishReading()` function.
 
 Be sure to ask the model of the display before starting, and ask any questions if something is unsure.
